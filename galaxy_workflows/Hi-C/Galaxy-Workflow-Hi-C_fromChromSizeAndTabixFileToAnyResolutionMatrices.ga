@@ -1,349 +1,248 @@
 {
-    "a_galaxy_workflow": "true", 
-    "annotation": "", 
-    "format-version": "0.1", 
-    "name": "Hi-C_fromChromSizeAndTabixFileToAnyResolutionMatrices", 
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "Hi-C_fromChromSizeAndTabixFileToAnyResolutionMatrices",
     "steps": {
         "0": {
-            "annotation": "", 
-            "content_id": null, 
-            "errors": null, 
-            "id": 0, 
-            "input_connections": {}, 
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
             "inputs": [
                 {
-                    "description": "", 
+                    "description": "",
                     "name": "chromosome sizes"
                 }
-            ], 
-            "label": null, 
-            "name": "Input dataset", 
-            "outputs": [], 
+            ],
+            "label": "chromosome sizes",
+            "name": "Input dataset",
+            "outputs": [],
             "position": {
-                "left": 200, 
-                "top": 203
-            }, 
-            "tool_id": null, 
-            "tool_state": "{\"name\": \"chromosome sizes\"}", 
-            "tool_version": null, 
-            "type": "data_input", 
-            "uuid": "4c4f41c9-204b-4dc6-a49b-0015f5b30016", 
+                "bottom": 365.1999969482422,
+                "height": 82.19999694824219,
+                "left": 112,
+                "right": 312,
+                "top": 283,
+                "width": 200,
+                "x": 112,
+                "y": 283
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "61fc438e-1027-4f97-8c2a-6f716f2de0b7",
             "workflow_outputs": [
                 {
-                    "label": null, 
-                    "output_name": "output", 
-                    "uuid": "e29f638c-e012-49a2-847d-474f8d3d77a4"
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "d6e3933c-773d-4bd4-85a7-66362f6e09ae"
                 }
             ]
-        }, 
+        },
         "1": {
-            "annotation": "", 
-            "content_id": null, 
-            "errors": null, 
-            "id": 1, 
-            "input_connections": {}, 
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 1,
+            "input_connections": {},
             "inputs": [
                 {
-                    "description": "", 
+                    "description": "",
                     "name": "Tabix with validPairs"
                 }
-            ], 
-            "label": null, 
-            "name": "Input dataset", 
-            "outputs": [], 
+            ],
+            "label": "Tabix with validPairs",
+            "name": "Input dataset",
+            "outputs": [],
             "position": {
-                "left": 516, 
-                "top": 401
-            }, 
-            "tool_id": null, 
-            "tool_state": "{\"name\": \"Tabix with validPairs\"}", 
-            "tool_version": null, 
-            "type": "data_input", 
-            "uuid": "61582035-eb2a-40ee-902e-83eb0e8979f3", 
+                "bottom": 563.1999969482422,
+                "height": 82.19999694824219,
+                "left": 428,
+                "right": 628,
+                "top": 481,
+                "width": 200,
+                "x": 428,
+                "y": 481
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "8ebee1c6-3c30-4962-ade7-3847eabe378a",
             "workflow_outputs": [
                 {
-                    "label": null, 
-                    "output_name": "output", 
-                    "uuid": "54d5a4e9-73eb-4409-9a28-de0480d244fa"
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "b45f93b2-bc38-46b0-a235-629338eb1757"
                 }
             ]
-        }, 
+        },
         "2": {
-            "annotation": "", 
-            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_makebins/0.0.1", 
-            "errors": null, 
-            "id": 2, 
+            "annotation": "",
+            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_makebins/0.0.1",
+            "errors": null,
+            "id": 2,
             "input_connections": {
                 "chromosomeSize": {
-                    "id": 0, 
+                    "id": 0,
                     "output_name": "output"
                 }
-            }, 
+            },
             "inputs": [
                 {
-                    "description": "runtime parameter for tool cooler_makebins", 
-                    "name": "chromosomeSize"
-                }, 
-                {
-                    "description": "runtime parameter for tool cooler_makebins", 
+                    "description": "runtime parameter for tool cooler_makebins",
                     "name": "binsize"
                 }
-            ], 
-            "label": null, 
-            "name": "cooler_makebins", 
+            ],
+            "label": null,
+            "name": "cooler_makebins",
             "outputs": [
                 {
-                    "name": "output", 
+                    "name": "output",
                     "type": "bed"
                 }
-            ], 
+            ],
             "position": {
-                "left": 474, 
-                "top": 142
-            }, 
+                "bottom": 396.8000030517578,
+                "height": 174.8000030517578,
+                "left": 386,
+                "right": 586,
+                "top": 222,
+                "width": 200,
+                "x": 386,
+                "y": 222
+            },
             "post_job_actions": {
                 "HideDatasetActionoutput": {
-                    "action_arguments": {}, 
-                    "action_type": "HideDatasetAction", 
+                    "action_arguments": {},
+                    "action_type": "HideDatasetAction",
                     "output_name": "output"
                 }
-            }, 
-            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_makebins/0.0.1", 
+            },
+            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_makebins/0.0.1",
             "tool_shed_repository": {
-                "changeset_revision": "6b97ee5d8f51", 
-                "name": "cooler", 
-                "owner": "lldelisle", 
+                "changeset_revision": "1b9d5647b58e",
+                "name": "cooler",
+                "owner": "lldelisle",
                 "tool_shed": "testtoolshed.g2.bx.psu.edu"
-            }, 
-            "tool_state": "{\"__page__\": null, \"chromosomeSize\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"__rerun_remap_job_id__\": null, \"binsize\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\"}", 
-            "tool_version": "0.0.1", 
-            "type": "tool", 
-            "uuid": "72855fe6-e7cf-46fb-b86b-d30125cb2aa7", 
+            },
+            "tool_state": "{\"binsize\": {\"__class__\": \"RuntimeValue\"}, \"chromosomeSize\": {\"__class__\": \"ConnectedValue\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "0.0.1",
+            "type": "tool",
+            "uuid": "c2dbcf71-ef5f-444d-80c8-0e6231bcd116",
             "workflow_outputs": []
-        }, 
+        },
         "3": {
-            "annotation": "", 
-            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_cload_pairix/0.0.1", 
-            "errors": null, 
-            "id": 3, 
+            "annotation": "",
+            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_cload_pairix/0.0.1",
+            "errors": null,
+            "id": 3,
             "input_connections": {
                 "input_bed": {
-                    "id": 2, 
+                    "id": 2,
                     "output_name": "output"
-                }, 
+                },
                 "input_pairs": {
-                    "id": 1, 
+                    "id": 1,
                     "output_name": "output"
                 }
-            }, 
-            "inputs": [
-                {
-                    "description": "runtime parameter for tool cooler_cload_tabix", 
-                    "name": "input_bed"
-                }, 
-                {
-                    "description": "runtime parameter for tool cooler_cload_tabix", 
-                    "name": "input_pairs"
-                }
-            ], 
-            "label": null, 
-            "name": "cooler_cload_tabix", 
+            },
+            "inputs": [],
+            "label": null,
+            "name": "cooler_cload_tabix",
             "outputs": [
                 {
-                    "name": "output", 
+                    "name": "output",
                     "type": "cool"
                 }
-            ], 
+            ],
             "position": {
-                "left": 786, 
-                "top": 331
-            }, 
+                "bottom": 595.8000030517578,
+                "height": 184.8000030517578,
+                "left": 698,
+                "right": 898,
+                "top": 411,
+                "width": 200,
+                "x": 698,
+                "y": 411
+            },
             "post_job_actions": {
                 "HideDatasetActionoutput": {
-                    "action_arguments": {}, 
-                    "action_type": "HideDatasetAction", 
+                    "action_arguments": {},
+                    "action_type": "HideDatasetAction",
                     "output_name": "output"
                 }
-            }, 
-            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_cload_pairix/0.0.1", 
+            },
+            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_cload_pairix/0.0.1",
             "tool_shed_repository": {
-                "changeset_revision": "6b97ee5d8f51", 
-                "name": "cooler", 
-                "owner": "lldelisle", 
+                "changeset_revision": "1b9d5647b58e",
+                "name": "cooler",
+                "owner": "lldelisle",
                 "tool_shed": "testtoolshed.g2.bx.psu.edu"
-            }, 
-            "tool_state": "{\"p2\": \"\\\"8\\\"\", \"__page__\": null, \"assembly\": \"\\\"mm10\\\"\", \"input_bed\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"__rerun_remap_job_id__\": null, \"input_pairs\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"c2\": \"\\\"7\\\"\", \"chromInfo\": \"\\\"/slipstream/galaxy/production/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\"}", 
-            "tool_version": "0.0.1", 
-            "type": "tool", 
-            "uuid": "a0c76c26-279a-422d-b172-2f313ebd9d5b", 
+            },
+            "tool_state": "{\"assembly\": \"mm10\", \"c2\": \"7\", \"chromInfo\": \"/slipstream/galaxy/production/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\", \"input_bed\": {\"__class__\": \"ConnectedValue\"}, \"input_pairs\": {\"__class__\": \"ConnectedValue\"}, \"p2\": \"8\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "0.0.1",
+            "type": "tool",
+            "uuid": "c3537b71-e11d-43d7-9142-180c8efe11e7",
             "workflow_outputs": []
-        }, 
+        },
         "4": {
-            "annotation": "", 
-            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_balance/0.0.1", 
-            "errors": null, 
-            "id": 4, 
+            "annotation": "",
+            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_balance/0.0.1",
+            "errors": null,
+            "id": 4,
             "input_connections": {
                 "input": {
-                    "id": 3, 
+                    "id": 3,
                     "output_name": "output"
                 }
-            }, 
-            "inputs": [
-                {
-                    "description": "runtime parameter for tool cooler_balance", 
-                    "name": "input"
-                }
-            ], 
-            "label": null, 
-            "name": "cooler_balance", 
+            },
+            "inputs": [],
+            "label": null,
+            "name": "cooler_balance",
             "outputs": [
                 {
-                    "name": "output", 
+                    "name": "output",
                     "type": "cool"
                 }
-            ], 
+            ],
             "position": {
-                "left": 1006, 
-                "top": 331
-            }, 
-            "post_job_actions": {
-                "HideDatasetActionoutput": {
-                    "action_arguments": {}, 
-                    "action_type": "HideDatasetAction", 
-                    "output_name": "output"
-                }
-            }, 
-            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_balance/0.0.1", 
+                "bottom": 524.6000061035156,
+                "height": 113.60000610351562,
+                "left": 918,
+                "right": 1118,
+                "top": 411,
+                "width": 200,
+                "x": 918,
+                "y": 411
+            },
+            "post_job_actions": {},
+            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_balance/0.0.1",
             "tool_shed_repository": {
-                "changeset_revision": "6b97ee5d8f51", 
-                "name": "cooler", 
-                "owner": "lldelisle", 
+                "changeset_revision": "1b9d5647b58e",
+                "name": "cooler",
+                "owner": "lldelisle",
                 "tool_shed": "testtoolshed.g2.bx.psu.edu"
-            }, 
-            "tool_state": "{\"__page__\": null, \"mincount\": \"\\\"0\\\"\", \"minnnz\": \"\\\"10\\\"\", \"cisonly\": \"\\\"true\\\"\", \"__rerun_remap_job_id__\": null, \"maxiters\": \"\\\"200\\\"\", \"tol\": \"\\\"1e-05\\\"\", \"provideR\": \"{\\\"provideReg\\\": \\\"false\\\", \\\"__current_case__\\\": 1}\", \"input\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"madmax\": \"\\\"5\\\"\", \"chromInfo\": \"\\\"/slipstream/galaxy/production/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\\\"\", \"ignorediags\": \"\\\"2\\\"\"}", 
-            "tool_version": "0.0.1", 
-            "type": "tool", 
-            "uuid": "c4632809-0337-4006-9e46-c0f34bfb23ea", 
-            "workflow_outputs": []
-        }, 
-        "5": {
-            "annotation": "", 
-            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_getMatrix/0.0.1", 
-            "errors": null, 
-            "id": 5, 
-            "input_connections": {
-                "input": {
-                    "id": 4, 
-                    "output_name": "output"
-                }
-            }, 
-            "inputs": [
-                {
-                    "description": "runtime parameter for tool cooler_getMatrix", 
-                    "name": "input"
-                }
-            ], 
-            "label": null, 
-            "name": "cooler_getMatrix", 
-            "outputs": [
-                {
-                    "name": "output", 
-                    "type": "tabular"
-                }
-            ], 
-            "position": {
-                "left": 1271.5, 
-                "top": 216
-            }, 
-            "post_job_actions": {
-                "RenameDatasetActionoutput": {
-                    "action_arguments": {
-                        "newname": "raw_chr2_72_77.txt"
-                    }, 
-                    "action_type": "RenameDatasetAction", 
-                    "output_name": "output"
-                }
-            }, 
-            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_getMatrix/0.0.1", 
-            "tool_shed_repository": {
-                "changeset_revision": "6b97ee5d8f51", 
-                "name": "cooler", 
-                "owner": "lldelisle", 
-                "tool_shed": "testtoolshed.g2.bx.psu.edu"
-            }, 
-            "tool_state": "{\"__page__\": null, \"r1\": \"\\\"chr2:72000000-77000000\\\"\", \"__rerun_remap_job_id__\": null, \"header\": \"\\\"true\\\"\", \"input\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"differentRegions\": \"{\\\"difReg\\\": \\\"false\\\", \\\"__current_case__\\\": 1}\", \"balance\": \"\\\"false\\\"\"}", 
-            "tool_version": "0.0.1", 
-            "type": "tool", 
-            "uuid": "a26f236e-eafe-48a3-ae6a-bf25e9a43476", 
+            },
+            "tool_state": "{\"chromInfo\": \"/slipstream/galaxy/production/galaxy-dist/tool-data/shared/ucsc/chrom/?.len\", \"cisonly\": \"true\", \"ignorediags\": \"2\", \"input\": {\"__class__\": \"ConnectedValue\"}, \"madmax\": \"5\", \"maxiters\": \"200\", \"mincount\": \"0\", \"minnnz\": \"10\", \"provideR\": {\"provideReg\": \"false\", \"__current_case__\": 1}, \"tol\": \"1e-05\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "0.0.1",
+            "type": "tool",
+            "uuid": "186169bb-36a2-4b11-98f0-07a3899965c0",
             "workflow_outputs": [
                 {
-                    "label": null, 
-                    "output_name": "output", 
-                    "uuid": "47e2b8df-a649-4854-ae23-7e9f0b41d4fc"
-                }
-            ]
-        }, 
-        "6": {
-            "annotation": "", 
-            "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_getMatrix/0.0.1", 
-            "errors": null, 
-            "id": 6, 
-            "input_connections": {
-                "input": {
-                    "id": 4, 
-                    "output_name": "output"
-                }
-            }, 
-            "inputs": [
-                {
-                    "description": "runtime parameter for tool cooler_getMatrix", 
-                    "name": "input"
-                }
-            ], 
-            "label": null, 
-            "name": "cooler_getMatrix", 
-            "outputs": [
-                {
-                    "name": "output", 
-                    "type": "tabular"
-                }
-            ], 
-            "position": {
-                "left": 1285.5, 
-                "top": 386
-            }, 
-            "post_job_actions": {
-                "RenameDatasetActionoutput": {
-                    "action_arguments": {
-                        "newname": "iced_chr2_72_77.txt"
-                    }, 
-                    "action_type": "RenameDatasetAction", 
-                    "output_name": "output"
-                }
-            }, 
-            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/cooler/cooler_getMatrix/0.0.1", 
-            "tool_shed_repository": {
-                "changeset_revision": "6b97ee5d8f51", 
-                "name": "cooler", 
-                "owner": "lldelisle", 
-                "tool_shed": "testtoolshed.g2.bx.psu.edu"
-            }, 
-            "tool_state": "{\"__page__\": null, \"r1\": \"\\\"chr2:72000000-77000000\\\"\", \"__rerun_remap_job_id__\": null, \"header\": \"\\\"true\\\"\", \"input\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"differentRegions\": \"{\\\"difReg\\\": \\\"false\\\", \\\"__current_case__\\\": 1}\", \"balance\": \"\\\"true\\\"\"}", 
-            "tool_version": "0.0.1", 
-            "type": "tool", 
-            "uuid": "69bc46e5-e66f-4d73-8f0f-307c4592f311", 
-            "workflow_outputs": [
-                {
-                    "label": null, 
-                    "output_name": "output", 
-                    "uuid": "2238da4f-572a-45e9-816a-503b70dfc8da"
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "d173f60b-ff8f-49a9-aad9-b7a946d5f00b"
                 }
             ]
         }
-    }, 
+    },
     "tags": [
         "Hi-C"
-    ], 
-    "uuid": "59e2932e-7d85-4172-87cf-b0e5d35ff532"
+    ],
+    "uuid": "a4440f88-90fb-4ed0-afb9-ea38bb32ab74",
+    "version": 2
 }
