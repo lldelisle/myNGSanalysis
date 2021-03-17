@@ -1,0 +1,276 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "averageReplicatesFromNormalizedCollection",
+    "steps": {
+        "0": {
+            "annotation": "collection of normalized bedgraph",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "collection of normalized bedgraph",
+                    "name": "collection of normalized bedgraph"
+                }
+            ],
+            "label": "collection of normalized bedgraph",
+            "name": "Input dataset collection",
+            "outputs": [],
+            "position": {
+                "bottom": 441.1999969482422,
+                "height": 82.19999694824219,
+                "left": 268,
+                "right": 468,
+                "top": 359,
+                "width": 200,
+                "x": 268,
+                "y": 359
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"collection_type\": \"list\"}",
+            "tool_version": null,
+            "type": "data_collection_input",
+            "uuid": "d8c3237f-790d-4488-bce7-197c728f94a5",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "46be16c1-4a42-451e-9f6a-24d17712a594"
+                }
+            ]
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_sortbed/2.29.2",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "input": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": null,
+            "name": "bedtools SortBED",
+            "outputs": [
+                {
+                    "name": "output",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 513.3999938964844,
+                "height": 154.39999389648438,
+                "left": 488,
+                "right": 688,
+                "top": 359,
+                "width": 200,
+                "x": 488,
+                "y": 359
+            },
+            "post_job_actions": {
+                "HideDatasetActionoutput": {
+                    "action_arguments": {},
+                    "action_type": "HideDatasetAction",
+                    "output_name": "output"
+                }
+            },
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_sortbed/2.29.2",
+            "tool_shed_repository": {
+                "changeset_revision": "0a5c785ac6db",
+                "name": "bedtools",
+                "owner": "iuc",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"__input_ext\": \"bedgraph\", \"chromInfo\": \"/data/galaxy/galaxy/var/tool-data/mm10_UCSC/len/mm10_UCSC.len\", \"input\": {\"__class__\": \"ConnectedValue\"}, \"input|__identifier__\": \"coverage_negative_strand_noheader of uniquely mapped of RNA STAR on data 3, data 2, and data 1: mapped.bam with R2 orientation reversed\", \"option\": \"\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "2.29.2",
+            "type": "tool",
+            "uuid": "89bfaaab-e739-42d4-969c-01008a6a94df",
+            "workflow_outputs": []
+        },
+        "2": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_unionbedgraph/2.29.2",
+            "errors": null,
+            "id": 2,
+            "input_connections": {
+                "tag|inputs": {
+                    "id": 1,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": null,
+            "name": "bedtools Merge BedGraph files",
+            "outputs": [
+                {
+                    "name": "output",
+                    "type": "bedgraph"
+                }
+            ],
+            "position": {
+                "bottom": 472.6000061035156,
+                "height": 113.60000610351562,
+                "left": 708,
+                "right": 908,
+                "top": 359,
+                "width": 200,
+                "x": 708,
+                "y": 359
+            },
+            "post_job_actions": {
+                "HideDatasetActionoutput": {
+                    "action_arguments": {},
+                    "action_type": "HideDatasetAction",
+                    "output_name": "output"
+                }
+            },
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_unionbedgraph/2.29.2",
+            "tool_shed_repository": {
+                "changeset_revision": "0a5c785ac6db",
+                "name": "bedtools",
+                "owner": "iuc",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"__input_ext\": \"bedgraph\", \"chromInfo\": \"/data/galaxy/galaxy/var/tool-data/mm10_UCSC/len/mm10_UCSC.len\", \"empty\": {\"empty_selector\": \"\", \"__current_case__\": 1}, \"filler\": \"0\", \"header\": \"false\", \"tag\": {\"tag_select\": \"tag\", \"__current_case__\": 0, \"inputs\": {\"__class__\": \"ConnectedValue\"}}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "2.29.2",
+            "type": "tool",
+            "uuid": "7e6e1d6d-fcd1-4f8e-b60b-104511c6a8b8",
+            "workflow_outputs": []
+        },
+        "3": {
+            "annotation": "",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_awk_tool/1.1.2",
+            "errors": null,
+            "id": 3,
+            "input_connections": {
+                "infile": {
+                    "id": 2,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Text reformatting",
+                    "name": "infile"
+                }
+            ],
+            "label": "average",
+            "name": "Text reformatting",
+            "outputs": [
+                {
+                    "name": "outfile",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 472.6000061035156,
+                "height": 113.60000610351562,
+                "left": 928,
+                "right": 1128,
+                "top": 359,
+                "width": 200,
+                "x": 928,
+                "y": 359
+            },
+            "post_job_actions": {
+                "ChangeDatatypeActionoutfile": {
+                    "action_arguments": {
+                        "newtype": "bedgraph"
+                    },
+                    "action_type": "ChangeDatatypeAction",
+                    "output_name": "outfile"
+                },
+                "RenameDatasetActionoutfile": {
+                    "action_arguments": {
+                        "newname": "bedgraph: average of replicates"
+                    },
+                    "action_type": "RenameDatasetAction",
+                    "output_name": "outfile"
+                }
+            },
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_awk_tool/1.1.2",
+            "tool_shed_repository": {
+                "changeset_revision": "ddf54b12c295",
+                "name": "text_processing",
+                "owner": "bgruening",
+                "tool_shed": "toolshed.g2.bx.psu.edu"
+            },
+            "tool_state": "{\"code\": \"{n=NF-3;sum=0;for(i=4;i<=NF;i++){sum+=$i};if(sum!=0){print $1,$2,$3,sum/n}}\", \"infile\": {\"__class__\": \"RuntimeValue\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.1.2",
+            "type": "tool",
+            "uuid": "bd1f4fac-cd7a-4eed-a898-a90ede4d0ede",
+            "workflow_outputs": [
+                {
+                    "label": "bedgraph: average of replicates",
+                    "output_name": "outfile",
+                    "uuid": "b0467af1-c835-4bae-b546-4598bb157d0a"
+                }
+            ]
+        },
+        "4": {
+            "annotation": "",
+            "content_id": "wig_to_bigWig",
+            "errors": null,
+            "id": 4,
+            "input_connections": {
+                "input1": {
+                    "id": 3,
+                    "output_name": "outfile"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Wig/BedGraph-to-bigWig",
+                    "name": "input1"
+                }
+            ],
+            "label": null,
+            "name": "Wig/BedGraph-to-bigWig",
+            "outputs": [
+                {
+                    "name": "out_file1",
+                    "type": "bigwig"
+                }
+            ],
+            "position": {
+                "bottom": 490.5,
+                "height": 134,
+                "left": 1155,
+                "right": 1355,
+                "top": 356.5,
+                "width": 200,
+                "x": 1155,
+                "y": 356.5
+            },
+            "post_job_actions": {
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "bedgraph: average of replicates"
+                    },
+                    "action_type": "RenameDatasetAction",
+                    "output_name": "out_file1"
+                }
+            },
+            "tool_id": "wig_to_bigWig",
+            "tool_state": "{\"input1\": {\"__class__\": \"RuntimeValue\"}, \"settings\": {\"settingsType\": \"preset\", \"__current_case__\": 0}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.1.1",
+            "type": "tool",
+            "uuid": "4e8109a1-e4d1-44de-b6a2-82b8fd828f1d",
+            "workflow_outputs": [
+                {
+                    "label": "bigwig: average of replicates",
+                    "output_name": "out_file1",
+                    "uuid": "3da81246-5356-404c-a8e5-9a949d75f826"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "b28e3d04-e610-48ab-ad6c-565d79334b67",
+    "version": 3
+}
