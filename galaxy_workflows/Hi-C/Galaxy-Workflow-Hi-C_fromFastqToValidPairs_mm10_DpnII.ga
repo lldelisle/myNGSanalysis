@@ -1,6 +1,6 @@
 {
-    "a_galaxy_workflow": "true", 
-    "annotation": "First remove the truseq adapters, then uses Hicup v6.1 to go from fastq and mm10.fa to validPair file. First truncate the fastq using the cutting sequence to guess the fill-in. Then map the truncated fastq. Then asign to fragment and filter the self-ligated and dandling ends or internal (it can also filter for the size). Then it removes the duplicates. Finally a personnal script adapt the output to be compatible with juicebox or cooler.", 
+    "a_galaxy_workflow": "true",
+    "annotation": "First remove the truseq adapters and filter quality and length, then uses Hicup v6.1 to go from fastq and mm10.fa to validPair file. First truncate the fastq using the cutting sequence to guess the fill-in. Then map the truncated fastq. Then asign to fragment and filter the self-ligated and dandling ends or internal (it can also filter for the size). Then it removes the duplicates. Finally a personnal script adapt the output to be compatible with juicebox or cooler.", 
     "format-version": "0.1", 
     "name": "Hi-C_fromFastqToValidPairs_mm10_DpnII", 
     "steps": {
@@ -20,14 +20,14 @@
             "name": "Input dataset",
             "outputs": [],
             "position": {
-                "bottom": 24.300003051757812,
+                "bottom": 51.30000305175781,
                 "height": 61.80000305175781,
-                "left": -124,
-                "right": 76,
-                "top": -37.5,
+                "left": 289,
+                "right": 489,
+                "top": -10.5,
                 "width": 200,
-                "x": -124,
-                "y": -37.5
+                "x": 289,
+                "y": -10.5
             },
             "tool_id": null,
             "tool_state": "{\"optional\": false}",
@@ -52,14 +52,14 @@
             "name": "Input dataset",
             "outputs": [],
             "position": {
-                "bottom": 431.3000030517578,
+                "bottom": 458.3000030517578,
                 "height": 61.80000305175781,
-                "left": -135,
-                "right": 65,
-                "top": 369.5,
+                "left": 278,
+                "right": 478,
+                "top": 396.5,
                 "width": 200,
-                "x": -135,
-                "y": 369.5
+                "x": 278,
+                "y": 396.5
             },
             "tool_id": null,
             "tool_state": "{\"optional\": false}",
@@ -84,14 +84,14 @@
             "name": "Input dataset",
             "outputs": [],
             "position": {
-                "bottom": 864.6999969482422,
+                "bottom": 891.6999969482422,
                 "height": 82.19999694824219,
-                "left": 161,
-                "right": 361,
-                "top": 782.5,
+                "left": 574,
+                "right": 774,
+                "top": 809.5,
                 "width": 200,
-                "x": 161,
-                "y": 782.5
+                "x": 574,
+                "y": 809.5
             },
             "tool_id": null,
             "tool_state": "{\"optional\": false}",
@@ -102,70 +102,15 @@
         },
         "3": {
             "annotation": "",
-            "content_id": "toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/1.16.1",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/1.16.8",
             "errors": null,
             "id": 3,
             "input_connections": {
                 "library|input_1": {
                     "id": 0,
                     "output_name": "output"
-                }
-            },
-            "inputs": [],
-            "label": null,
-            "name": "Cutadapt",
-            "outputs": [
-                {
-                    "name": "out1",
-                    "type": "fasta"
                 },
-                {
-                    "name": "report",
-                    "type": "txt"
-                }
-            ],
-            "position": {
-                "bottom": 139.3000030517578,
-                "height": 184.8000030517578,
-                "left": 112,
-                "right": 312,
-                "top": -45.5,
-                "width": 200,
-                "x": 112,
-                "y": -45.5
-            },
-            "post_job_actions": {
-                "HideDatasetActionout1": {
-                    "action_arguments": {},
-                    "action_type": "HideDatasetAction",
-                    "output_name": "out1"
-                },
-                "HideDatasetActionreport": {
-                    "action_arguments": {},
-                    "action_type": "HideDatasetAction",
-                    "output_name": "report"
-                }
-            },
-            "tool_id": "toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/1.16.1",
-            "tool_shed_repository": {
-                "changeset_revision": "f5fdf41c08b8",
-                "name": "cutadapt",
-                "owner": "lparsons",
-                "tool_shed": "toolshed.g2.bx.psu.edu"
-            },
-            "tool_state": "{\"adapter_options\": {\"error_rate\": \"0.1\", \"no_indels\": \"false\", \"count\": \"1\", \"overlap\": \"3\", \"match_read_wildcards\": \"false\"}, \"filter_options\": {\"discard\": \"false\", \"discard_untrimmed\": \"false\", \"min\": \"0\", \"max\": \"0\", \"no_trim\": \"false\", \"mask_adapter\": \"false\", \"max_n\": null, \"pair_filter\": \"any\"}, \"library\": {\"type\": \"single\", \"__current_case__\": 0, \"input_1\": {\"__class__\": \"ConnectedValue\"}, \"r1\": {\"adapters\": [{\"__index__\": 0, \"adapter_source\": {\"adapter_source_list\": \"user\", \"__current_case__\": 0, \"adapter_name\": \"Trueseq Indexed Adapter\", \"adapter\": \"AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC\"}}], \"front_adapters\": [], \"anywhere_adapters\": [], \"cut\": \"0\"}}, \"output_options\": {\"report\": \"true\", \"info_file\": \"false\", \"rest_file\": \"false\", \"wildcard_file\": \"false\", \"too_short_file\": \"false\", \"too_long_file\": \"false\", \"untrimmed_file\": \"false\"}, \"read_mod_options\": {\"quality_cutoff\": \"0\", \"nextseq_trim\": \"0\", \"trim_n\": \"false\", \"prefix\": \"\", \"suffix\": \"\", \"strip_suffix\": \"\", \"length\": \"0\", \"length_tag\": \"\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
-            "tool_version": "1.16.1",
-            "type": "tool",
-            "uuid": "ee4a9452-d2e2-4c50-bd2f-67cf15aaa9f2",
-            "workflow_outputs": []
-        },
-        "4": {
-            "annotation": "",
-            "content_id": "toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/1.16.1",
-            "errors": null,
-            "id": 4,
-            "input_connections": {
-                "library|input_1": {
+                "library|input_2": {
                     "id": 1,
                     "output_name": "output"
                 }
@@ -176,44 +121,63 @@
             "outputs": [
                 {
                     "name": "out1",
-                    "type": "fasta"
+                    "type": "fastqsanger"
+                },
+                {
+                    "name": "out2",
+                    "type": "fastqsanger"
+                },
+                {
+                    "name": "report",
+                    "type": "txt"
                 }
             ],
             "position": {
-                "bottom": 491.5,
-                "height": 134,
-                "left": 103,
-                "right": 303,
-                "top": 357.5,
+                "bottom": 431.8999938964844,
+                "height": 286.3999938964844,
+                "left": 584,
+                "right": 784,
+                "top": 145.5,
                 "width": 200,
-                "x": 103,
-                "y": 357.5
+                "x": 584,
+                "y": 145.5
             },
             "post_job_actions": {
                 "HideDatasetActionout1": {
                     "action_arguments": {},
                     "action_type": "HideDatasetAction",
                     "output_name": "out1"
+                },
+                "HideDatasetActionout2": {
+                    "action_arguments": {},
+                    "action_type": "HideDatasetAction",
+                    "output_name": "out2"
                 }
             },
-            "tool_id": "toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/1.16.1",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/lparsons/cutadapt/cutadapt/1.16.8",
             "tool_shed_repository": {
-                "changeset_revision": "f5fdf41c08b8",
+                "changeset_revision": "093678460093",
                 "name": "cutadapt",
                 "owner": "lparsons",
                 "tool_shed": "toolshed.g2.bx.psu.edu"
             },
-            "tool_state": "{\"adapter_options\": {\"error_rate\": \"0.1\", \"no_indels\": \"false\", \"count\": \"1\", \"overlap\": \"3\", \"match_read_wildcards\": \"false\"}, \"filter_options\": {\"discard\": \"false\", \"discard_untrimmed\": \"false\", \"min\": \"0\", \"max\": \"0\", \"no_trim\": \"false\", \"mask_adapter\": \"false\", \"max_n\": null, \"pair_filter\": \"any\"}, \"library\": {\"type\": \"single\", \"__current_case__\": 0, \"input_1\": {\"__class__\": \"ConnectedValue\"}, \"r1\": {\"adapters\": [{\"__index__\": 0, \"adapter_source\": {\"adapter_source_list\": \"user\", \"__current_case__\": 0, \"adapter_name\": \"complement to TruSeq Universal Adapter\", \"adapter\": \"AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT\"}}], \"front_adapters\": [], \"anywhere_adapters\": [], \"cut\": \"0\"}}, \"output_options\": {\"report\": \"false\", \"info_file\": \"false\", \"rest_file\": \"false\", \"wildcard_file\": \"false\", \"too_short_file\": \"false\", \"too_long_file\": \"false\", \"untrimmed_file\": \"false\"}, \"read_mod_options\": {\"quality_cutoff\": \"0\", \"nextseq_trim\": \"0\", \"trim_n\": \"false\", \"prefix\": \"\", \"suffix\": \"\", \"strip_suffix\": \"\", \"length\": \"0\", \"length_tag\": \"\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
-            "tool_version": "1.16.1",
+            "tool_state": "{\"adapter_options\": {\"error_rate\": \"0.1\", \"no_indels\": \"false\", \"count\": \"1\", \"overlap\": \"3\", \"match_read_wildcards\": \" \", \"no_trim\": \"false\", \"mask_adapter\": \"false\"}, \"filter_options\": {\"discard\": \"false\", \"discard_untrimmed\": \"false\", \"min\": \"15\", \"max\": null, \"max_n\": null, \"pair_filter\": \"any\"}, \"library\": {\"type\": \"paired\", \"__current_case__\": 1, \"input_1\": {\"__class__\": \"ConnectedValue\"}, \"input_2\": {\"__class__\": \"ConnectedValue\"}, \"r1\": {\"adapters\": [{\"__index__\": 0, \"adapter_source\": {\"adapter_source_list\": \"user\", \"__current_case__\": 0, \"adapter_name\": \"TruSeqR1\", \"adapter\": \"AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC\"}}], \"front_adapters\": [], \"anywhere_adapters\": [], \"cut\": \"0\"}, \"r2\": {\"adapters2\": [{\"__index__\": 0, \"adapter_source2\": {\"adapter_source_list2\": \"user\", \"__current_case__\": 0, \"adapter_name2\": \"TruSeqR2\", \"adapter2\": \"AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT\"}}], \"front_adapters2\": [], \"anywhere_adapters2\": [], \"cut2\": \"0\"}}, \"output_options\": {\"report\": \"true\", \"info_file\": \"false\", \"rest_file\": \"false\", \"wildcard_file\": \"false\", \"too_short_file\": \"false\", \"too_long_file\": \"false\", \"untrimmed_file\": \"false\", \"multiple_output\": \"false\"}, \"read_mod_options\": {\"quality_cutoff\": \"30\", \"nextseq_trim\": \"0\", \"trim_n\": \"false\", \"prefix\": \"\", \"suffix\": \"\", \"strip_suffix\": \"\", \"length\": \"0\", \"length_tag\": \"\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.16.8",
             "type": "tool",
-            "uuid": "6f307a87-ca6d-4d50-bd27-f4d0aacadcbd",
-            "workflow_outputs": []
+            "uuid": "05a8d9e0-9edb-42aa-9a70-3dc509e757d7",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "report",
+                    "uuid": "ed623add-bbdb-4e24-a017-983167a7858c"
+                }
+            ]
         },
-        "5": {
+        "4": {
             "annotation": "",
             "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/hicup_digester/hicup_digester/0.6.1.0",
             "errors": null,
-            "id": 5,
+            "id": 4,
             "input_connections": {
                 "input_files_digest": {
                     "id": 2,
@@ -230,14 +194,14 @@
                 }
             ],
             "position": {
-                "bottom": 876.1000061035156,
+                "bottom": 903.1000061035156,
                 "height": 113.60000610351562,
-                "left": 524,
-                "right": 724,
-                "top": 762.5,
+                "left": 937,
+                "right": 1137,
+                "top": 789.5,
                 "width": 200,
-                "x": 524,
-                "y": 762.5
+                "x": 937,
+                "y": 789.5
             },
             "post_job_actions": {
                 "ChangeDatatypeActiondigest_file": {
@@ -266,11 +230,11 @@
             "uuid": "e265d666-e17a-46ed-9cec-9aac91ee939c",
             "workflow_outputs": []
         },
-        "6": {
+        "5": {
             "annotation": "",
             "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/hicup_hicup/hicup_hicup/0.6.1.0",
             "errors": null,
-            "id": 6,
+            "id": 5,
             "input_connections": {
                 "input_files_digest": {
                     "id": 2,
@@ -281,8 +245,8 @@
                     "output_name": "out1"
                 },
                 "input_second_sequence": {
-                    "id": 4,
-                    "output_name": "out1"
+                    "id": 3,
+                    "output_name": "out2"
                 }
             },
             "inputs": [],
@@ -307,14 +271,14 @@
                 }
             ],
             "position": {
-                "bottom": 636.8999938964844,
+                "bottom": 663.8999938964844,
                 "height": 306.3999938964844,
-                "left": 465.5,
-                "right": 665.5,
-                "top": 330.5,
+                "left": 878.5,
+                "right": 1078.5,
+                "top": 357.5,
                 "width": 200,
-                "x": 465.5,
-                "y": 330.5
+                "x": 878.5,
+                "y": 357.5
             },
             "post_job_actions": {
                 "HideDatasetActiondataset_hicup": {
@@ -343,27 +307,27 @@
                 {
                     "label": null,
                     "output_name": "hicup_report",
-                    "uuid": "c53f3f7e-6b16-4cd0-8f6e-6cd693ae676f"
+                    "uuid": "219bc82d-39ce-4b5d-aaf9-2f4e97797253"
                 },
                 {
                     "label": null,
                     "output_name": "hicup_results",
-                    "uuid": "36e36855-98f8-4411-91ef-260647d0c594"
+                    "uuid": "5708a83e-60d9-4a35-ba73-1c9e1ec84463"
                 }
             ]
         },
-        "7": {
+        "6": {
             "annotation": "",
             "content_id": "testtoolshed.g2.bx.psu.edu/repos/lldelisle/from_hicup_to_juicebox/fromHicupToJuicebox/0.0.2",
             "errors": null,
-            "id": 7,
+            "id": 6,
             "input_connections": {
                 "fragmentFile": {
-                    "id": 5,
+                    "id": 4,
                     "output_name": "digest_file"
                 },
                 "inputPairs": {
-                    "id": 6,
+                    "id": 5,
                     "output_name": "dataset_hicup"
                 }
             },
@@ -377,14 +341,14 @@
                 }
             ],
             "position": {
-                "bottom": 570.5,
+                "bottom": 597.5,
                 "height": 246,
-                "left": 843.5,
-                "right": 1043.5,
-                "top": 324.5,
+                "left": 1256.5,
+                "right": 1456.5,
+                "top": 351.5,
                 "width": 200,
-                "x": 843.5,
-                "y": 324.5
+                "x": 1256.5,
+                "y": 351.5
             },
             "post_job_actions": {
                 "RenameDatasetActionoutput": {
@@ -410,18 +374,18 @@
                 {
                     "label": null,
                     "output_name": "output",
-                    "uuid": "b7e92a23-4b8e-4a8e-b6a9-f648a2d18f4f"
+                    "uuid": "6c7f7940-afc8-44a0-b1dc-a6e689f7d68a"
                 }
             ]
         },
-        "8": {
+        "7": {
             "annotation": "",
-            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_awk_tool/1.1.0",
+            "content_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_awk_tool/1.1.2",
             "errors": null,
-            "id": 8,
+            "id": 7,
             "input_connections": {
                 "infile": {
-                    "id": 7,
+                    "id": 6,
                     "output_name": "output"
                 }
             },
@@ -435,14 +399,14 @@
                 }
             ],
             "position": {
-                "bottom": 579.6999969482422,
+                "bottom": 606.6999969482422,
                 "height": 93.19999694824219,
-                "left": 1121,
-                "right": 1321,
-                "top": 486.5,
+                "left": 1534,
+                "right": 1734,
+                "top": 513.5,
                 "width": 200,
-                "x": 1121,
-                "y": 486.5
+                "x": 1534,
+                "y": 513.5
             },
             "post_job_actions": {
                 "RenameDatasetActionoutfile": {
@@ -453,27 +417,27 @@
                     "output_name": "outfile"
                 }
             },
-            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_awk_tool/1.1.0",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/text_processing/tp_awk_tool/1.1.2",
             "tool_shed_repository": {
-                "changeset_revision": "e39fceb6ab85",
+                "changeset_revision": "ddf54b12c295",
                 "name": "text_processing",
                 "owner": "bgruening",
                 "tool_shed": "toolshed.g2.bx.psu.edu"
             },
             "tool_state": "{\"code\": \"$10>=30 && $11>=30{if($3==\\\"chr2\\\"&&$7==\\\"chr2\\\"&&$4<77000000&&$4>72402000&&$8<77000000&&$8>72402000&&($8-$4)>10000){hoxd+=1}}END{print \\\"UniqbothMapq30More10kbinHoxD\\\\tUniqbothMapq30More10kbinSox9\\\";print hoxd\\\"\\\\t0\\\"}\", \"infile\": {\"__class__\": \"ConnectedValue\"}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
-            "tool_version": "1.1.0",
+            "tool_version": "1.1.2",
             "type": "tool",
-            "uuid": "6005cfa2-811f-4118-a049-b4641c7de8c8",
+            "uuid": "2dc13e5d-c783-441c-98ef-82fa25a43287",
             "workflow_outputs": [
                 {
                     "label": null,
                     "output_name": "outfile",
-                    "uuid": "4d70acdd-8bff-40a6-a2e5-269a6cd02658"
+                    "uuid": "f7180e35-fbd4-4845-b2db-b7a18afff01a"
                 }
             ]
         }
     },
     "tags": [],
-    "uuid": "b1b0e361-ae66-4072-a6de-03656452fe38",
+    "uuid": "880001ee-8a18-47e4-a7b3-688732451667",
     "version": 1
 }
