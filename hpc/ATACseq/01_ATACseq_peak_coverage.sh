@@ -66,7 +66,7 @@ picardCommand="picard"
 # module purge
 # module load Miniconda3/4.9.2
 
-# You can choose to use a conda environment to solve cutadapt/bowtie2/samtools/bedtools/macs2/bedgraphtobigwig dependencies
+# You can choose to use a conda environment to solve cutadapt/bowtie2/samtools/bedtools/picard/macs2/bedgraphtobigwig dependencies
 # I created mine with: conda create -n atac202209 cutadapt samtools bedtools bowtie2 picard macs2 ucsc-bedgraphtobigwig
 # Comment it if you will use module load
 condaEnvName=atac202209
@@ -209,6 +209,9 @@ if [ ! -e ${sample}_macs_likeATAC_norm1.bedGraph.gz ]; then
   bedGraphToBigWig ${sample}_macs_likeATAC_norm1.bedGraph ${filePathForFasta}.fai ${sample}_macs_likeATAC_norm1.bw
   gzip ${sample}_macs_likeATAC_norm1.bedGraph &
 fi
+
+# I wait for gzip to finish
+wait
 
 if [ ! -e ${sample}_macs_likeATAC_norm2.bedGraph.gz ]; then
   if [ ! -e ${sample}_readsInPeaks.txt ]; then
