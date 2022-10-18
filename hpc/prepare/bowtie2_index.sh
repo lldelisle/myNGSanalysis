@@ -22,10 +22,6 @@
 # Only change if you don't want to use all CPUs allocated
 nbOfThreads=${SLURM_CPUS_PER_TASK}
 
-# You can choose to use a conda environment to solve bowtie2 dependencies
-# Comment it if you will use module load
-condaEnvName=hic202209
-
 ### Specify the paths
 # All genomes are registered into a table where
 # first column is the genome name
@@ -49,6 +45,10 @@ basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/__genome__"
 # or
 # module purge
 # module load Miniconda3/4.9.2
+
+# You can choose to use a conda environment to solve bowtie2 dependencies
+# Comment it if you will use module load
+condaEnvName=hic202209
 
 ##################################
 ####### BEGINING OF SCRIPT #######
