@@ -9,9 +9,17 @@
 #SBATCH --time 12:00:00 # This depends on the size of the fastqs
 #SBATCH --array=4-5 # Put here the rows from the table that need to be processed in the table
 #SBATCH --job-name HiC_test # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/HiC/ # This directory must exists, this is where will be the error and out files
+#SBATCH --chdir /scratch/ldelisle/HiC/ # This directory must exist, this is where will be the error and out files
 ## Specific to baobab:
 ##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+
+# This script run hicup with Bowtie2
+# convert hicup bam to juicebox format valid pairs
+# If needed will subset to pairs both in capture region
+# Will sort the pairs to build matrices in cool format
+# Balance with cooler
+# Do some plots with pyGenomeTracks
+
 
 ##################################
 #### TO SET FOR EACH ANALYSIS ####
@@ -44,22 +52,6 @@ testRegion="chr2:73779626-75669724"
 chrUsed="chr2"
 start="72402000"
 end="77000000"
-
-# We will use a conda environment to solve some dependencies
-# The python script which converts hicup bam to valid pairs requires pysam
-# The matrix generation requires cooler
-# The plot to check the quality requires pygenometracks
-# We create a conda environment with pygenometracks as pysam and cooler
-# Are dependencies of pygenometracks
-# You need to install it before running the script
-# To create it simply load all the modules required to get conda on your instance
-# Then choose a name for your conda environment (here pgt3.7)
-# and then:
-# conda create -y -n pgt3.7 -c bioconda -c conda-forge pygenometracks=3.7
-# condaEnvName=pgt3.7
-# Alternatively you can use conda to solve all dependencies:
-# conda create -y -n hic202209 -c bioconda -c conda-forge pygenometracks hicup
-condaEnvName=hic202209
 
 ### Specify the paths
 
@@ -120,6 +112,23 @@ filePathForSizesForBin="${filePathForFasta}.fai"
 # But you need to install plotly version 4.9.1
 # Or to ssh with graphics (ssh -Y)
 
+# We will use a conda environment to solve some dependencies
+# The python script which converts hicup bam to valid pairs requires pysam
+# The matrix generation requires cooler
+# The plot to check the quality requires pygenometracks
+# We create a conda environment with pygenometracks as pysam and cooler
+# Are dependencies of pygenometracks
+# You need to install it before running the script
+# To create it simply load all the modules required to get conda on your instance
+# Then choose a name for your conda environment (here pgt3.7)
+# and then:
+# conda create -y -n pgt3.7 -c bioconda -c conda-forge pygenometracks=3.7
+# condaEnvName=pgt3.7
+# Alternatively you can use conda to solve all dependencies:
+# conda create -y -n hic202209 -c bioconda -c conda-forge pygenometracks hicup
+condaEnvName=hic202209
+
+
 ##################################
 ####### BEGINING OF SCRIPT #######
 ##################################
@@ -150,7 +159,7 @@ fi
 bowtie2 --version
 if [ $? -ne 0 ]
 then
-  echo "Bowtie2 is not installed but required. Please install it from github (just untar)"
+  echo "Bowtie2 is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
 if [ ! -e ${basenamePathForB2Index}.rev.2.bt2 ]; then
@@ -160,7 +169,7 @@ fi
 samtools --version
 if [ $? -ne 0 ]
 then
-  echo "samtools is not installed but required. Please install it from github (just untar)"
+  echo "samtools is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
 R --version
@@ -258,7 +267,7 @@ mkdir -p ${pathResults}
 # The name of the sample is written in stdout
 echo ${sample}
 
-# The analysis part takes part within the patResults
+# The analysis part takes part within the pathResults
 cd ${pathResults}
 
 # Check if an output bam exists
