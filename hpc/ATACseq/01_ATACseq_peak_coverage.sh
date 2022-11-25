@@ -50,6 +50,7 @@ dirPathForScripts="/home/ldelisle/scripts/Scitas_template_bashScript/"
 # first column is the sample name
 # second column is the path of the R1 fastq relatively to dirPathForFastq
 # third column is same for R2
+# Alternatively second column can be SRA number but third column must be filled by anything for example also the SRA number
 filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20221018_testATAC/table_ATAC.txt"
 
 basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/${genome}"
@@ -143,8 +144,8 @@ then
 fi
 
 sample=$(cat ${filePathForTable} | awk -v i=$SLURM_ARRAY_TASK_ID 'NR==i{print $1}')
-fastqR1File=$(cat ${filePathForTable} | awk -v i=$SLURM_ARRAY_TASK_ID 'NR==i{print $2}')
-fastqR2File=$(cat ${filePathForTable} | awk -v i=$SLURM_ARRAY_TASK_ID 'NR==i{print $3}')
+relFilePathFastqR1=$(cat ${filePathForTable} | awk -v i=$SLURM_ARRAY_TASK_ID 'NR==i{print $2}')
+relFilePathFastqR2=$(cat ${filePathForTable} | awk -v i=$SLURM_ARRAY_TASK_ID 'NR==i{print $3}')
 
 # Each sample is processed into an independent directory:
 pathResults=${dirPathWithResults}/${sample}/
@@ -160,9 +161,39 @@ cd $pathResults
 
 # Only run cutadapt if the report does not exists
 if [ ! -e ${sample}_report-cutadapt_PE.txt ]; then
-  fastqR1=${dirPathForFastq}/$fastqR1File
-  fastqR2=${dirPathForFastq}/$fastqR2File
-  cutadapt -j $nbOfThreads -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -A CTGTCTCTTATACACATCTGACGCTGCCGACGA -q 30 -m 15 -o ${sample}-cutadapt_R1.fastq.gz -p ${sample}-cutadapt_R2.fastq.gz $fastqR1 $fastqR2 > ${sample}_report-cutadapt_PE.txt
+  fastqR1=${dirPathForFastq}/$relFilePathFastqR1
+  fastqR2=${dirPathForFastq}/$relFilePathFastqR2
+  if [ ! -e $fastqR1 ]; then
+    # If the fastq does not exists we assume it was an SRA ID
+    mkdir -p ${dirPathForFastq}
+    cd ${dirPathForFastq}
+    # Write version to stdout:
+    fasterq-dump --version
+    if [ $? -ne 0 ]
+    then
+      echo "fasterq-dump is not installed and fastqFile not found so assumed it was a SRA ID.
+Please install it for example in the conda environment (sra-tools>=2.11)."
+      exit 1
+    fi
+    fasterq-dump -o ${sample}.fastq ${relFilePathFastqR1}
+    if [ ! -s ${sample}_1.fastq ]; then
+        echo "FASTQ R1 IS EMPTY"
+        exit 1
+    fi
+    gzip ${sample}_1.fastq
+    gzip ${sample}_2.fastq
+    cd $pathResults
+    fastqR1=${dirPathForFastq}/${sample}_1.fastq.gz
+    fastqR2=${dirPathForFastq}/${sample}_2.fastq.gz
+  fi
+  if [ ! -s $fastqR1 ]; then
+    echo "FASTQ R1 IS EMPTY"
+    exit 1
+  fi
+  cutadapt -j $nbOfThreads -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC \
+    -A CTGTCTCTTATACACATCTGACGCTGCCGACGA \
+    -q 30 -m 15 -o ${sample}-cutadapt_R1.fastq.gz -p ${sample}-cutadapt_R2.fastq.gz \
+    $fastqR1 $fastqR2 > ${sample}_report-cutadapt_PE.txt
 fi
 
 # Only run mapping if report does not exists
