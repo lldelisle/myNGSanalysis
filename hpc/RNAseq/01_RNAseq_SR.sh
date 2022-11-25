@@ -153,6 +153,7 @@ if [ ${SLURM_ARRAY_TASK_ID} = ${SLURM_ARRAY_TASK_MIN} ]; then
   fi
   # Generate the chrM.gtf:
   if [ ! -e ${dirPathWithResults}/${genome}_chrM.gtf ]; then
+    mkdir -p ${dirPathWithResults}
     chrM_size=$(cat ${filePathForFasta}.fai  | grep -w chrM | cut -f 2)
     echo -e "chrM\tchrM_gene\texon\t1\t${chrM_size}\t.\t+\t.\tgene_id \"chrM_gene_plus\"; transcript_id \"chrM_tx_plus\"; exon_id \"chrM_ex_plus\";" > ${dirPathWithResults}/${genome}_chrM.gtf
     echo -e "chrM\tchrM_gene\texon\t1\t${chrM_size}\t.\t-\t.\tgene_id \"chrM_gene_minus\"; transcript_id \"chrM_tx_minus\"; exon_id \"chrM_ex_minus\";" >> ${dirPathWithResults}/${genome}_chrM.gtf
