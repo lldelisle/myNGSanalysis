@@ -48,12 +48,6 @@ adapterSeq="TruSeq"  # comment the non-relevant adapter type
 dirPathWithResults="$PWD/"
 # Where fastqs are stored:
 dirPathForFastq="${dirPathWithResults}/fastq/"
-# This script will use fromMacs2BdgToSimplifiedBdgAndBw.sh
-# The last version of the script is available at
-# https://raw.githubusercontent.com/lldelisle/scriptsForAmandioEtAl2021/main/scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh
-# If it does not exists
-# The python script will be put in dirPathForScripts
-dirPathForScripts="/home/ldelisle/scripts/Scitas_template_bashScript/"
 # All samples are registered into a table where
 # first column is the sample name
 # second column is the path of the fastq relatively to dirPathForFastq
