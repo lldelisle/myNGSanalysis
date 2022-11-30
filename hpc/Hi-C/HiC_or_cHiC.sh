@@ -72,6 +72,7 @@ dirPathForScripts="/home/ldelisle/scripts/Scitas_template_bashScript/"
 # first column is the sample name
 # second column is the path of the R1 fastq relatively to dirPathForFastq
 # third column is same for R2
+# Alternatively second column can be SRA number
 filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20220921_test_HiC/table_cHiC_2.txt"
 
 basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/${genome}"
@@ -126,6 +127,7 @@ filePathForSizesForBin="${filePathForFasta}.fai"
 # condaEnvName=pgt3.7
 # Alternatively you can use conda to solve all dependencies:
 # conda create -y -n hic202209 -c bioconda -c conda-forge pygenometracks hicup
+# If you want to use sra you also need sra-tools>=2.11
 condaEnvName=hic202209
 
 
@@ -279,6 +281,33 @@ inputBAM=$(find . -name "*.hicup.bam")
 
 # Only run hicup if the bam does not exists
 if [ -z $inputBAM ]; then
+  if [ ! -e ${dirPathForFastq}/${relFilePathFastqR1} ]; then
+    # If the fastq does not exists we assume it was an SRA ID
+    mkdir -p ${dirPathForFastq}
+    cd ${dirPathForFastq}
+    # Write version to stdout:
+    fasterq-dump --version
+    if [ $? -ne 0 ]
+    then
+      echo "fasterq-dump is not installed and fastqFile not found so assumed it was a SRA ID.
+Please install it for example in the conda environment (sra-tools>=2.11)."
+      exit 1
+    fi
+    fasterq-dump -o ${sample}.fastq ${relFilePathFastqR1}
+    if [ ! -s ${sample}_1.fastq ]; then
+        echo "FASTQ R1 IS EMPTY"
+        exit 1
+    fi
+    gzip ${sample}_1.fastq
+    gzip ${sample}_2.fastq
+    cd $pathResults
+    relFilePathFastqR1=${sample}_1.fastq.gz
+    relFilePathFastqR2=${sample}_2.fastq.gz
+  fi
+  if [ ! -s ${dirPathForFastq}/${relFilePathFastqR1} ]; then
+    echo "FASTQ R1 IS EMPTY"
+    exit 1
+  fi
   # Run hicup
   hicup ${optionForHiCUP} --bowtie2 ${exePathForB2} \
     --digest ${pathForDigest} --format Sanger --index ${basenamePathForB2Index} \
