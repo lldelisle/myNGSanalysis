@@ -86,6 +86,7 @@ filePathForFasta=$(cat ${filePathForTable} | awk -v i=${SLURM_ARRAY_TASK_ID} 'NR
 basenamePathForB2Index=${basenamePathForB2Index/__genome__/${genome}}
 
 if [ ! -e ${basenamePathForB2Index}.rev.2.bt2 ]; then
+    mkdir -p $(dirname ${basenamePathForB2Index})
     bowtie2-build --thread ${nbOfThreads} ${filePathForFasta} ${basenamePathForB2Index}
     ln -s ${filePathForFasta} ${basenamePathForB2Index}.fa
 else
