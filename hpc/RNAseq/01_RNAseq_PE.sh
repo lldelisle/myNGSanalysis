@@ -16,7 +16,7 @@
 # This script run cutadapt to remove adapters and bad quality bases
 # make alignment with STAR ENCODE parameters
 # Evaluate FPKM with cufflinks
-# Coverage with bedtools
+# Coverage normalized to million mapped reads with bedtools
 
 
 ##################################
@@ -265,6 +265,12 @@ if { [ ! -e accepted_hits_unique_${sample}.bam ] && [ -s Aligned.sortedByCoord.o
   rm tmp.header
 fi
 
+if [ -e Log.final.out ]; then
+  scalingFactor=$(awk '$0~"Uniquely mapped reads number"{print 1000000/$NF}' Log.final.out)
+elif [ -e accepted_hits_unique_${sample}.bam ]; then
+  scalingFactor=$(samtools view -c accepted_hits_unique_${sample}.bam)
+fi
+
 if [ ! -e htseqCount_${sample}.txt ] && [ -e ReadsPerGene.out.tab ];then 
   echo "write htseqCount" # compile htseq counts-like from STAR counts
   if [ "$stranded" = "unstranded" ]; then 
@@ -274,14 +280,14 @@ if [ ! -e htseqCount_${sample}.txt ] && [ -e ReadsPerGene.out.tab ];then
   fi
 fi
 
-#This is to make the bedgraph of coverage
-if { [ ! -e ${sample}_Uniq.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.u ] ;then
+# This is to make the bedgraph of coverage normalized to million mapped reads
+if { [ ! -e ${sample}_Uniq_norm.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.u ] ;then
   echo "Building uniq reads bedGraph"
-  echo "track type=bedGraph name=\"${sample} Uniq reads\"" > tmp.header.u
-  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}.bam -bg -split | cat tmp.header.u - > ${sample}_Uniq.bedGraph" > u.sh
-  echo "cat ${sample}_Uniq.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_sorted.bedGraph" >> u.sh
-  echo "bedGraphToBigWig ${sample}_Uniq_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq.bw" >> u.sh
-  echo "gzip ${sample}_Uniq.bedGraph" >> u.sh
+  echo "track type=bedGraph name=\"${sample} Uniq reads normalized to million mapped reads\"" > tmp.header.u
+  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}.bam -bg -split -scale ${scalingFactor} | cat tmp.header.u - > ${sample}_Uniq_norm.bedGraph" > u.sh
+  echo "cat ${sample}_Uniq_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_norm_sorted.bedGraph" >> u.sh
+  echo "bedGraphToBigWig ${sample}_Uniq_norm_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_norm.bw" >> u.sh
+  echo "gzip ${sample}_Uniq_norm.bedGraph" >> u.sh
   echo "rm tmp.header.u" >> u.sh
   echo "touch u.done" >> u.sh
   bash u.sh &
@@ -314,25 +320,26 @@ if [ "$stranded" != "unstranded" ]; then
     print
   }' | samtools view -b - > accepted_hits_unique_${sample}_R2_rev.bam 
   fi
-  if { [ ! -e ${sample}_Uniq_fwd.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.uf ] ;then
+
+  if { [ ! -e ${sample}_Uniq_fwd_norm.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.uf ] ;then
   #strand + corresponds to reverse strand due to TruSeq
   echo "Building uniq fwd reads bedGraph"
-  echo "track type=bedGraph name=\"${sample} Uniq reads forward\"" > tmp.header.uf
-  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}_R2_rev.bam -bg -split -strand - | cat tmp.header.uf - > ${sample}_Uniq_fwd.bedGraph" > uf.sh
-  echo "cat ${sample}_Uniq_fwd.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_fwd_sorted.bedGraph" >> uf.sh
-  echo "bedGraphToBigWig ${sample}_Uniq_fwd_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_fwd.bw" >> uf.sh
-  echo "gzip ${sample}_Uniq_fwd.bedGraph" >> uf.sh
+  echo "track type=bedGraph name=\"${sample} Uniq reads forward to million mapped reads\"" > tmp.header.uf
+  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}_R2_rev.bam -bg -split -strand - -scale ${scalingFactor} | cat tmp.header.uf - > ${sample}_Uniq_fwd_norm.bedGraph" > uf.sh
+  echo "cat ${sample}_Uniq_fwd_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_fwd_norm_sorted.bedGraph" >> uf.sh
+  echo "bedGraphToBigWig ${sample}_Uniq_fwd_norm_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw" >> uf.sh
+  echo "gzip ${sample}_Uniq_fwd_norm.bedGraph" >> uf.sh
   echo "rm tmp.header.uf" >> uf.sh
   echo "touch uf.done" >> uf.sh
   bash uf.sh &
   fi
-  if { [ ! -e ${sample}_Uniq_rev.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.ur ];then
+  if { [ ! -e ${sample}_Uniq_rev_norm.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.ur ];then
   echo "Building uniq rev reads bedGraph"
-  echo "track type=bedGraph name=\"${sample} Uniq reads reverse\"" > tmp.header.ur
-  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}_R2_rev.bam -bg -split -strand + | cat tmp.header.ur - > ${sample}_Uniq_rev.bedGraph" > ur.sh
-  echo "cat ${sample}_Uniq_rev.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_rev_sorted.bedGraph" >> ur.sh
-  echo "bedGraphToBigWig ${sample}_Uniq_rev_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_rev.bw" >> ur.sh
-  echo "gzip ${sample}_Uniq_rev.bedGraph" >> ur.sh
+  echo "track type=bedGraph name=\"${sample} Uniq reads reverse to million mapped reads\"" > tmp.header.ur
+  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}_R2_rev.bam -bg -split -strand + -scale ${scalingFactor} | cat tmp.header.ur - > ${sample}_Uniq_rev_norm.bedGraph" > ur.sh
+  echo "cat ${sample}_Uniq_rev_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_rev_norm_sorted.bedGraph" >> ur.sh
+  echo "bedGraphToBigWig ${sample}_Uniq_rev_norm_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw" >> ur.sh
+  echo "gzip ${sample}_Uniq_rev_norm.bedGraph" >> ur.sh
   echo "rm tmp.header.ur" >> ur.sh
   echo "touch ur.done" >> ur.sh
   bash ur.sh &
