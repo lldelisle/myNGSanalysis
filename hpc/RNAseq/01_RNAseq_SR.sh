@@ -35,7 +35,7 @@ else
   nbOfThreads=${SLURM_CPUS_PER_TASK}
 fi
 # Which genome to map on
-# /!\ This script will use bowtie2 and bowtie2 is not 'alt-aware' so do not use a genome with alt contigs
+# /!\ This script will use STAR and STAR is not 'alt-aware' so do not use a genome with alt contigs
 genome=mm39
 adapterSeq="TruSeq"  # comment the non-relevant adapter type
 # adapterSeq="NextSeq"
