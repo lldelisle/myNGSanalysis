@@ -352,7 +352,7 @@ find . -size 0 -delete
 
 
 mkdir -p ${dirPathWithResults}/allFinalFiles/reports/
-cp ${sample}_report-cutadapt.txt ${dirPathWithResults}/allFinalFiles/reports/
+cp ${sample}_report-cutadapt_PE.txt ${dirPathWithResults}/allFinalFiles/reports/
 cp Log.final.out ${dirPathWithResults}/allFinalFiles/reports/${sample}_STAR_logFinal.txt
 
 mkdir -p ${dirPathWithResults}/allFinalFiles/bam/
