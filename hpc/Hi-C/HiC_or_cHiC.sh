@@ -6,14 +6,16 @@
 #SBATCH --ntasks 1 # In this script everything is sequencial
 #SBATCH --mem 100G # The memory needed depends on the size of the genome and the size of fastqs
 #SBATCH --cpus-per-task 24 # This allows to speed the mapping part of HiCUP
-#SBATCH --time 12:00:00 # This depends on the size of the fastqs
+#SBATCH --time 24:00:00 # This depends on the size of the fastqs
 #SBATCH --array=4-5 # Put here the rows from the table that need to be processed in the table
 #SBATCH --job-name HiC_test # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/HiC/ # This directory must exist, this is where will be the error and out files
+#SBATCH --chdir /scratch/ldelisle/Bolt/HiC_mm39/ # This directory must exist, this is where will be the error and out files
+## Specific to jed:
+#SBATCH --qos serial
 ## Specific to baobab:
 ##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
 
-# This script run hicup with Bowtie2
+# This script run hicup >=0.9.2 with Bowtie2
 # convert hicup bam to juicebox format valid pairs
 # If needed will subset to pairs both in capture region
 # Will sort the pairs to build matrices in cool format
@@ -49,9 +51,11 @@ bins="50 20"
 # chr2:73779626-75669724 HoxD mm10
 testRegion="chr2:73779626-75669724"
 # Captured region, if it is not a capture, comment these 3 lines
+# HoxD mm10:
 chrUsed="chr2"
 start="72402000"
 end="77000000"
+generatefullpairfile="Y" # Comment this line if you only want the file for the cature region
 
 ### Specify the paths
 
@@ -62,24 +66,20 @@ end="77000000"
 dirPathWithResults="$PWD/"
 # Where fastqs are stored:
 dirPathForFastq="${dirPathWithResults}/fastq/"
-# This script will use fromHicupToJuicebox.py
-# The last version of the script is available at
-# https://github.com/lldelisle/tools-lldelisle/blob/master/tools/fromHicupToJuicebox/fromHicupToJuicebox.py
-# If it does not exists
-# The python script will be put in dirPathForScripts
-dirPathForScripts="/home/ldelisle/scripts/Scitas_template_bashScript/"
 # All samples are registered into a table where
 # first column is the sample name
 # second column is the path of the R1 fastq relatively to dirPathForFastq
 # third column is same for R2
 # Alternatively second column can be SRA number
 filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20220921_test_HiC/table_cHiC_2.txt"
+## The script will write a file with software versions close to this file
+fileWithVersions=$(dirname $filePathForTable)/${SLURM_JOBID}_versions.txt
 
 basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/${genome}"
 filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
 # If you downloaded HiCUP from github
 # Put here the directory it will be added to the PATH:
-# dirPathForHiCUP="/home/ldelisle/softwares/HiCUP-0.8.1/"
+# dirPathForHiCUP="/home/ldelisle/softwares/HiCUP-0.9.2/"
 # If you used conda, just comment it
 
 # You can decide to generate cool files only for part of the genome
@@ -126,9 +126,9 @@ filePathForSizesForBin="${filePathForFasta}.fai"
 # conda create -y -n pgt3.7 -c bioconda -c conda-forge pygenometracks=3.7
 # condaEnvName=pgt3.7
 # Alternatively you can use conda to solve all dependencies:
-# conda create -y -n hic202209 -c bioconda -c conda-forge pygenometracks hicup
+# conda create -y -n hic202302 -c bioconda -c conda-forge pygenometracks hicup>=0.9.2
 # If you want to use sra you also need sra-tools>=2.11
-condaEnvName=hic202209
+condaEnvName=hic202302
 
 
 ##################################
@@ -136,7 +136,7 @@ condaEnvName=hic202209
 ##################################
 
 if [ ! -z ${dirPathForHiCUP} ]; then
-  export PATH=$PATH:${dirPathForHiCUP}
+  export PATH=$PATH:${dirPathForHiCUP}:${dirPathForHiCUP}/Conversion/
 fi
 # Check everything is set correctly:
 # Conda environment:
@@ -152,34 +152,45 @@ fi
 # Activate the conda environment
 conda activate ${condaEnvName}
 # Check all softwares are present and write version to stdout:
-hicup --version
+v=$(hicup --version)
 if [ $? -ne 0 ]
 then
-  echo "HiCUP is not installed but required. Please install it from github (just untar)"
+  echo "HiCUP is not installed but required. Please install it from github (just untar) or conda"
   exit 1
 fi
-bowtie2 --version
+echo $v >> ${fileWithVersions}
+v=$(hicup2juicer --version)
+if [ $? -ne 0 ]
+then
+  echo "hicup2juicer is not installed but required. Please install it from github (just untar) or conda"
+  exit 1
+fi
+echo $v >> ${fileWithVersions}
+v=$(bowtie2 --version)
 if [ $? -ne 0 ]
 then
   echo "Bowtie2 is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
+echo $v >> ${fileWithVersions}
 if [ ! -e ${basenamePathForB2Index}.rev.2.bt2 ]; then
   echo "${basenamePathForB2Index}.rev.2.bt2 does not exists. Either your variable basenamePathForB2Index is wrong or your bowtie2 index did not full run."
   exit 1
 fi
-samtools --version
+v=$(samtools --version)
 if [ $? -ne 0 ]
 then
   echo "samtools is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
-R --version
+echo $v >> ${fileWithVersions}
+v=$(R --version)
 if [ $? -ne 0 ]
 then
   echo "R is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
+echo $v >> ${fileWithVersions}
 # Check plotly and rmarkdown and tidyverse are installed:
 Rscript -e "library(rmarkdown);library(tidyverse);library(plotly)"
 if [ $? -ne 0 ]
@@ -187,40 +198,22 @@ then
   echo "Some R packages are missing check rmarkdown, tidyverse and plotly are installed."
   exit 1
 fi
-python --version
-if [ $? -ne 0 ]
-then
-  echo "python is not installed but required. Please install it for example in the conda environment."
-  exit 1
-fi
-# Check it is python 3
-python --version | grep -q "Python 3"
-if [ $? -ne 0 ]
-then
-  echo "python version is not python 3. Please install it for example in the conda environment."
-  exit 1
-fi
-# Check pysam version:
-python -c "import pysam;print(f\"pysam version: {pysam.__version__}\")"
-if [ $? -ne 0 ]
-then
-  echo "pysam is not installed but required. Please install it for example in the conda environment."
-  exit 1
-fi
-cooler --version
+v=$(cooler --version)
 # Check cooler is installed:
 if [ $? -ne 0 ]
 then
   echo "Cooler is not installed but required. Please install it for example in the conda environment"
   exit 1
 fi
-pgt --version
+echo $v >> ${fileWithVersions}
+v=$(pgt --version)
 # Check pgt is installed:
 if [ $? -ne 0 ]
 then
   echo "pyGenomeTracks is not installed but required. Please install it for example in the conda environment"
   exit 1
 fi
+echo $v >> ${fileWithVersions}
 
 # Get exe path for hicup
 exePathForR=$(which R)
@@ -320,23 +313,9 @@ else
   echo "HiCUP bam already exists. Not regenerating it."
 fi
 
-# To convert the bam to valid pairs in juicebox format
-# The python script require a non gzip digester file
-pathForDigestNGZ="${dirPathWithResults}/${genome}_digester_${restName}.txt"
-
-if [ ! -e $pathForDigestNGZ ]; then
-  gunzip -c $pathForDigest > $pathForDigestNGZ
-fi
-
-
-# Convert the bam to validPair in juicebox format
-# The python script contrary to the provided converter
-# Keep the fragment id and use the middle of the fragment
-wget "https://raw.githubusercontent.com/lldelisle/tools-lldelisle/master/tools/fromHicupToJuicebox/fromHicupToJuicebox.py" \
-  -O ${dirPathForScripts}/fromHicupToJuicebox.py -nc
-
 if [ ! -e ${sample}.validPairs_nonSorted.txt.gz ]; then
-  python ${dirPathForScripts}/fromHicupToJuicebox.py  --fragmentFile $pathForDigestNGZ --colForChr 1 --colForStart 2 --colForEnd 3 --colForID 4 --lineToSkipInFragmentFile 2 --useMid $inputBAM | gzip > ${sample}.validPairs_nonSorted.txt.gz
+  hicup2juicer --digest $pathForDigest --zip --useMid $inputBAM
+  mv *prejuicer.gz ${sample}.validPairs_nonSorted.txt.gz
 else
   echo "Valid pair file already generated. Will not regenerate it."
 fi
@@ -346,15 +325,19 @@ inputValidPairs=${sample}.validPairs_nonSorted.txt.gz
 if [ -z $chrUsed ]; then
   pairs=${sample}.validPairs.csort.gz
 else
-  inputValidPairs_onCapture=${sample}.validPairs_onCapture.txt.gz
-  pairs=${sample}_onCapture.validPairs.csort.gz
-  if [ ! -e ${inputValidPairs_onCapture} ]; then
-      zcat ${inputValidPairs} | awk -v c=${chrUsed} -v s=${start} -v e=${end} '$3==c && $7==c && $4>s && $4<e && $8>s && $8<e{print}' | gzip > ${inputValidPairs_onCapture}
+  if [ -z ${generatefullpairfile} ]; then
+    inputValidPairs_onCapture=${sample}.validPairs_onCapture.txt.gz
+    pairs=${sample}_onCapture.validPairs.csort.gz
+    if [ ! -e ${inputValidPairs_onCapture} ]; then
+        zcat ${inputValidPairs} | awk -v c=${chrUsed} -v s=${start} -v e=${end} '$3==c && $7==c && $4>s && $4<e && $8>s && $8<e{print}' | gzip > ${inputValidPairs_onCapture}
+    else
+      echo "Valid pairs on capture already generated. Will not regenerate it."
+    fi
+    # Update the inputValidPairs variable:
+    inputValidPairs=${inputValidPairs_onCapture}
   else
-    echo "Valid pairs on capture already generated. Will not regenerate it."
+    pairs=${sample}.validPairs.csort.gz
   fi
-  # Update the inputValidPairs variable:
-  inputValidPairs=${inputValidPairs_onCapture}
 fi
 
 if [ ! -e $filePathForSizes ]; then
@@ -364,6 +347,13 @@ fi
 if [ ! -e $pairs ]; then
   # sort and index the pairs with cooler and tabix
   cooler csort -i tabix -c1 3 -c2 7 -p1 4 -p2 8 -o $pairs $inputValidPairs $filePathForSizes
+fi
+
+if [ ! -z $chrUsed ] && [ ! -z ${generatefullpairfile} ]; then
+  # Extract capture region from global sorted pair:
+  tabix $pairs ${chrUsed}:${start}-${end} | awk -v c=${chrUsed} -v s=${start} -v e=${end} '$7==c && $8>s && $8<e{print}' | bgzip > ${sample}_onCapture.validPairs.csort.gz
+  pairs=${sample}_onCapture.validPairs.csort.gz
+  tabix -s 3 -b 4 -e 4 ${pairs}
 fi
 
 ini_file=${sample}.ini
@@ -412,3 +402,8 @@ mkdir -p ${dirPathWithResults}/allFinalFiles/pairs
 cp ${pairs} ${dirPathWithResults}/allFinalFiles/pairs/
 mkdir -p ${dirPathWithResults}/allFinalFiles/visualisation
 cp *.pdf ${dirPathWithResults}/allFinalFiles/visualisation
+
+# For GEO:
+mkdir -p ${dirPathWithResults}/toGEO
+cp $(ls *cool | grep -v raw) ${dirPathWithResults}/toGEO/
+cp *csort.gz ${dirPathWithResults}/toGEO/
