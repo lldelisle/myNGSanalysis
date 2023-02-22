@@ -211,6 +211,7 @@ if [ ! -e ${filePathForFasta}.fai ]; then
 fi
 
 # Get the bash script:
+mkdir -p $dirPathForScripts
 wget "https://raw.githubusercontent.com/lldelisle/scriptsForAmandioEtAl2021/main/scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh" \
   -O ${dirPathForScripts}/fromMacs2BdgToSimplifiedBdgAndBw.sh -nc
 
