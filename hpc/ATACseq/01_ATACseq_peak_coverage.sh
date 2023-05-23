@@ -234,15 +234,15 @@ if [ ! -e ${sample}_macs_likeATAC.bedGraph.gz ]; then
   bash ${dirPathForScripts}/fromMacs2BdgToSimplifiedBdgAndBw.sh ${sample}_treat_pileup.bdg ${sample}_macs_likeATAC "macs2 like ATAC of ${sample}" ${filePathForFasta}.fai &
 fi
 
+# I wait for gzip to finish
+wait
+
 if [ ! -e ${sample}_macs_likeATAC_norm1.bedGraph.gz ]; then
   likeATAC=$(cat ${sample}_macs_likeATAC.log | awk '$0~/total tags/{print $NF}')
   zcat ${sample}_macs_likeATAC.bedGraph.gz | awk -v s=$sample -v n=$likeATAC -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\""s" like ATAC normalized by million reads\" visibility=full autoScale=on windowingFunction=mean"}NR>1{$4=$4/n*1e6; print}' > ${sample}_macs_likeATAC_norm1.bedGraph
   bedGraphToBigWig ${sample}_macs_likeATAC_norm1.bedGraph ${filePathForFasta}.fai ${sample}_macs_likeATAC_norm1.bw
   gzip ${sample}_macs_likeATAC_norm1.bedGraph &
 fi
-
-# I wait for gzip to finish
-wait
 
 if [ ! -e ${sample}_macs_likeATAC_norm2.bedGraph.gz ]; then
   if [ ! -e ${sample}_readsInPeaks.txt ]; then
