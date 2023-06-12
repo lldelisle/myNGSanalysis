@@ -52,7 +52,7 @@ dirPathForFastq="${dirPathWithResults}/fastq/"
 # first column is the sample name
 # second column is the path of the fastq relatively to dirPathForFastq
 # Alternatively second column can be SRA number
-# third column is the strandness of the library: stranded or unstranded (We assume that stranded means reverse stranded)
+# third column is the strandness of the library: forward or reverse or unstranded
 filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20221018_testRNA/table_RNA.txt"
 filePathForGTF="${dirPathWithResults}/mergeOverlapGenesOfFilteredTranscriptsOfMus_musculus.GRCm39.104_ExonsOnly_UCSC.gtf"
 dirPathForSTARIndex="/work/updub/scratch/ldelisle/genomes/STARIndex_2.7.9a/${genome}/${genome}"
@@ -206,9 +206,9 @@ fi
 if [ ! -e Aligned.sortedByCoord.out.bam ];then
   if [ "$stranded" = "unstranded" ]; then 
     #I need to add --outSAMstrandField intronMotif because it is not stranded library
-    options="--outSAMstrandField intronMotif "
+    options="--outSAMstrandField intronMotif --outWigStrand Unstranded"
   else
-    options=""
+    options="--outWigStrand Stranded"
   fi
   STAR --runThreadN $nbOfThreads --genomeDir ${dirPathForSTARIndex} \
     --readFilesIn ${sample}-cutadapt.fastq.gz \
@@ -222,7 +222,8 @@ if [ ! -e Aligned.sortedByCoord.out.bam ];then
     --outFilterMismatchNoverReadLmax 0.04 \
     --alignIntronMin 20 --alignIntronMax 1000000 \
     --alignMatesGapMax 1000000 \
-    --alignSJoverhangMin 8 --alignSJDBoverhangMin 1
+    --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 \
+    --outWigType bedGraph 
   samtools index Aligned.sortedByCoord.out.bam
 fi
 
@@ -234,6 +235,8 @@ if [ -e ${filePathForFasta} ] && [ -e ${dirPathWithResults}/${genome}_chrM.gtf ]
     echo "" >> cufflinks_${sample}.sh
     if [ "$stranded" = "unstranded" ]; then 
       sed -i 's/fr-firststrand/fr-unstranded/g' cufflinks_${sample}.sh
+    elif [ "$stranded" = "forward" ]; then
+      sed -i 's/fr-secondstrand/fr-unstranded/g' cufflinks_${sample}.sh
     fi
     echo "Launching cufflinks"
     bash cufflinks_${sample}.sh &
@@ -242,65 +245,26 @@ else
   echo "cufflinks not launch because some files are missing."
 fi
 
-# Coverage is done on uniquely mapped reads
-if { [ ! -e accepted_hits_unique_${sample}.bam ] && [ -s Aligned.sortedByCoord.out.bam ] ;} || [ -e tmp.header ] ; then
-  echo "Compute uniquely aligned"
-  samtools view -H Aligned.sortedByCoord.out.bam >  tmp.header
-  samtools view --threads $nbOfThreads Aligned.sortedByCoord.out.bam | grep -w "NH:i:1" | cat tmp.header - | samtools view --threads $nbOfThreads -b > accepted_hits_unique_${sample}.bam
-  rm tmp.header
-fi
-
-if [ -e Log.final.out ]; then
-  scalingFactor=$(awk '$0~"Uniquely mapped reads number"{print 1000000/$NF}' Log.final.out)
-elif [ -e accepted_hits_unique_${sample}.bam ]; then
-  scalingFactor=$(samtools view -c accepted_hits_unique_${sample}.bam)
-fi
-
 if [ ! -e htseqCount_${sample}.txt ] && [ -e ReadsPerGene.out.tab ];then 
   echo "write htseqCount" # compile htseq counts-like from STAR counts
   if [ "$stranded" = "unstranded" ]; then 
     cat ReadsPerGene.out.tab | awk '{print $1"\t"$2}' > htseqCount_${sample}.txt
+  elif [ "$stranded" = "forward" ]; then
+    cat ReadsPerGene.out.tab | awk '{print $1"\t"$3}' > htseqCount_${sample}.txt
   else
     cat ReadsPerGene.out.tab | awk '{print $1"\t"$4}' > htseqCount_${sample}.txt
   fi
 fi
 
-# This is to make the bedgraph of coverage normalized to million mapped reads
-if { [ ! -e ${sample}_Uniq_norm.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.u ] ;then
-  echo "Building uniq reads bedGraph"
-  echo "track type=bedGraph name=\"${sample} Uniq reads normalized to million mapped reads\"" > tmp.header.u
-  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}.bam -bg -split -scale ${scalingFactor} | cat tmp.header.u - > ${sample}_Uniq_norm.bedGraph" > u.sh
-  echo "cat ${sample}_Uniq_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_norm_sorted.bedGraph" >> u.sh
-  echo "bedGraphToBigWig ${sample}_Uniq_norm_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_norm.bw" >> u.sh
-  echo "gzip ${sample}_Uniq_norm.bedGraph" >> u.sh
-  echo "rm tmp.header.u" >> u.sh
-  echo "touch u.done" >> u.sh
-  bash u.sh &
-fi
-if [ "$stranded" != "unstranded" ]; then
-  if { [ ! -e ${sample}_Uniq_fwd_norm.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.uf ] ;then
-  #strand + corresponds to reverse strand due to TruSeq
-  echo "Building uniq fwd reads bedGraph"
-  echo "track type=bedGraph name=\"${sample} Uniq reads forward to million mapped reads\"" > tmp.header.uf
-  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}.bam -bg -split -strand - -scale ${scalingFactor} | cat tmp.header.uf - > ${sample}_Uniq_fwd_norm.bedGraph" > uf.sh
-  echo "cat ${sample}_Uniq_fwd_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_fwd_norm_sorted.bedGraph" >> uf.sh
-  echo "bedGraphToBigWig ${sample}_Uniq_fwd_norm_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw" >> uf.sh
-  echo "gzip ${sample}_Uniq_fwd_norm.bedGraph" >> uf.sh
-  echo "rm tmp.header.uf" >> uf.sh
-  echo "touch uf.done" >> uf.sh
-  bash uf.sh &
-  fi
-  if { [ ! -e ${sample}_Uniq_rev_norm.bedGraph.gz ] && [ -e accepted_hits_unique_${sample}.bam ];} || [ -e tmp.header.ur ];then
-  echo "Building uniq rev reads bedGraph"
-  echo "track type=bedGraph name=\"${sample} Uniq reads reverse to million mapped reads\"" > tmp.header.ur
-  echo "bedtools genomecov -ibam accepted_hits_unique_${sample}.bam -bg -split -strand + -scale ${scalingFactor} | cat tmp.header.ur - > ${sample}_Uniq_rev_norm.bedGraph" > ur.sh
-  echo "cat ${sample}_Uniq_rev_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${sample}_Uniq_rev_norm_sorted.bedGraph" >> ur.sh
-  echo "bedGraphToBigWig ${sample}_Uniq_rev_norm_sorted.bedGraph ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw" >> ur.sh
-  echo "gzip ${sample}_Uniq_rev_norm.bedGraph" >> ur.sh
-  echo "rm tmp.header.ur" >> ur.sh
-  echo "touch ur.done" >> ur.sh
-  bash ur.sh &
-  fi
+# Coverage
+if [ "$stranded" = "unstranded" ]; then 
+  bedGraphToBigWig Signal.Unique.str1.out.bg ${filePathForFasta}.fai ${sample}_Uniq_norm.bw
+elif [ "$stranded" = "forward" ]; then
+  bedGraphToBigWig Signal.Unique.str1.out.bg ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw
+  bedGraphToBigWig Signal.Unique.str2.out.bg ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw
+else
+  bedGraphToBigWig Signal.Unique.str2.out.bg ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw
+  bedGraphToBigWig Signal.Unique.str1.out.bg ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw
 fi
 
 wait
