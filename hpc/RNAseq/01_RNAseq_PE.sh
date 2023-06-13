@@ -272,14 +272,32 @@ if [ ! -e htseqCount_${sample}.txt ] && [ -e ReadsPerGene.out.tab ];then
 fi
 
 # Coverage
+# Sort files
+for f in *.out.bg; do
+  output=${f/.bg/.sorted.bg}
+  if [ ! -e $output ]; then
+    bedtools sort -i $f > $output
+  fi
+done
+# Convert files
 if [ "$stranded" = "unstranded" ]; then 
-  bedGraphToBigWig Signal.Unique.str1.out.bg ${filePathForFasta}.fai ${sample}_Uniq_norm.bw
+  if [ ! -e ${sample}_Uniq_norm.bw ]; then
+    bedGraphToBigWig Signal.Unique.str1.out.sorted.bg ${filePathForFasta}.fai ${sample}_Uniq_norm.bw
+  fi
 elif [ "$stranded" = "forward" ]; then
-  bedGraphToBigWig Signal.Unique.str1.out.bg ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw
-  bedGraphToBigWig Signal.Unique.str2.out.bg ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw
+  if [ ! -e ${sample}_Uniq_fwd_norm.bw ]; then
+    bedGraphToBigWig Signal.Unique.str1.out.sorted.bg ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw
+  fi
+  if [ ! -e ${sample}_Uniq_rev_norm.bw ]; then
+  bedGraphToBigWig Signal.Unique.str2.out.sorted.bg ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw
+  fi
 else
-  bedGraphToBigWig Signal.Unique.str2.out.bg ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw
-  bedGraphToBigWig Signal.Unique.str1.out.bg ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw
+  if [ ! -e ${sample}_Uniq_fwd_norm.bw ]; then
+    bedGraphToBigWig Signal.Unique.str2.out.sorted.bg ${filePathForFasta}.fai ${sample}_Uniq_fwd_norm.bw
+  fi
+  if [ ! -e ${sample}_Uniq_rev_norm.bw ]; then
+  bedGraphToBigWig Signal.Unique.str1.out.sorted.bg ${filePathForFasta}.fai ${sample}_Uniq_rev_norm.bw
+  fi
 fi
 
 wait
