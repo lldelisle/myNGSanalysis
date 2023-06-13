@@ -244,7 +244,7 @@ fi
 
 # Cufflinks is run in parallel
 if [ -e ${filePathForFasta} ] && [ -e ${dirPathWithResults}/${genome}_chrM.gtf ] && [ -e $filePathForGTF ] && [ -s Aligned.sortedByCoord.out.bam ]; then
-  if [ ! -e isoforms.fpkm_tracking ];then
+  if [ ! -e cufflinks/isoforms.fpkm_tracking ];then
     echo "mkdir -p cufflinks" >>cufflinks_${sample}.sh
     echo "cufflinks -p ${nbOfThreads} -o cufflinks --max-bundle-length 10000000 --multi-read-correct --library-type \"fr-firststrand\" -b ${filePathForFasta} --no-effective-length-correction -M ${dirPathWithResults}/${genome}_chrM.gtf -G ${filePathForGTF} Aligned.sortedByCoord.out.bam" >> cufflinks_${sample}.sh
     echo "" >> cufflinks_${sample}.sh
