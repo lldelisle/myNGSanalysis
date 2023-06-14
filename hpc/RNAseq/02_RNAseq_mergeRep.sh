@@ -14,7 +14,7 @@
 ##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
 
 # This script merge coverage of replicates.
-# It uses unionbedgraph from bedtools + awk
+# It uses deeptools bigwigAverage
 
 
 ##################################
