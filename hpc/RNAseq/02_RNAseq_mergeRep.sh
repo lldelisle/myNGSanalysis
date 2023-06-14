@@ -76,10 +76,10 @@ then
   echo "python is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
-deeptools --version 2>&1
-if [ $? -eq 127 ]
+bigwigAverage --version
+if [ $? -ne 0 ]
 then
-  echo "bedGraphToBigWig is not installed but required. Please install it for example in the conda environment."
+  echo "deeptools is not installed or version is below 3.5.2. Please install it for example in the conda environment."
   exit 1
 fi
 
