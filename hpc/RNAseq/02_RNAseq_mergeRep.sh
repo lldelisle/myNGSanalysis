@@ -21,9 +21,7 @@
 #### TO SET FOR EACH ANALYSIS ####
 ##################################
 
-### Specify the options for your analysis:
-# Which genome has been used for mapping
-genome=mm39
+binsize=50 # 50 is default value. Decreasing will increase computation time.
 
 ### Specify the paths (same as for script 01)
 
@@ -35,27 +33,19 @@ dirPathWithResults="$PWD/"
 # first column is the sample name
 # second column is the name of all replicates separated by comma
 filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20221018_testRNA/table_RNA.txt"
-filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
 
 ### Specify the way to deal with dependencies:
 
-# The module load depends on the installation
-# # For baobab:
-# module purge
-# module load GCC/8.3.0 #required for samtools, bowtie2 and bedtools
-# module load OpenMPI/3.1.4
-# module load SAMtools/1.10
-# module load BEDTools/2.28.0
-# export PATH=$PATH:/home/users/d/darbellf/live/softwares/ucsc_utilities/ #to load bedGraphToBigWig
+# The only dependency is deeptools version >=3.5.2
 
 # Or if you are using conda
 # module purge
 # module load Miniconda3/4.9.2
 
-# You can choose to use a conda environment to solve bedtools/bedgraphtobigwig dependencies
-# You can create it with: conda create -n rna202209 cutadapt samtools star cufflinks bedtools ucsc-bedgraphtobigwig "sra-tools>=2.11"
+# You can choose to use a conda environment to solve deeptools>=3.5.2 dependency
+# You can create it with: conda create -n deeptools3.5.2 python=3.9 deeptools=3.5.2
 # Comment it if you will use module load
-condaEnvName=rna202209
+condaEnvName=deeptools3.5.2
 ######
 
 
@@ -80,13 +70,13 @@ if [ ! -z ${condaEnvName} ]; then
 fi
 
 # Check all softwares are present and write version to stdout:
-bedtools --version
+python --version
 if [ $? -ne 0 ]
 then
-  echo "bedtools is not installed but required. Please install it for example in the conda environment."
+  echo "python is not installed but required. Please install it for example in the conda environment."
   exit 1
 fi
-bedGraphToBigWig 2>&1
+deeptools --version 2>&1
 if [ $? -eq 127 ]
 then
   echo "bedGraphToBigWig is not installed but required. Please install it for example in the conda environment."
@@ -111,64 +101,47 @@ cd $pathResults
 
 # Three variable are initialized:
 doStrand=1
-allBDGfwd=""
-allBDGrev=""
-allBDG=""
+noGlobal=0
+allBWfwd=""
+allBWrev=""
+allBW=""
 
 for s in $samples; do
-    if [ -e ${dirPathWithResults}/${s}/${s}_Uniq_norm_sorted.bedgraph ]; then
-        allBDG="${allBDG} ${dirPathWithResults}/${s}/${s}_Uniq_norm_sorted.bedgraph"
-    elif  [ -e ${dirPathWithResults}/${s}/${s}_Uniq_norm.bedgraph.gz ]; then
-        zcat ${dirPathWithResults}/${s}/${s}_Uniq_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${dirPathWithResults}/${s}/${s}_Uniq_norm_sorted.bedGraph
-        allBDG="${allBDG} ${dirPathWithResults}/${s}/${s}_Uniq_norm_sorted.bedgraph"
+    if [ -e ${dirPathWithResults}/${s}/${s}_Uniq_norm.bw ]; then
+        allBW="${allBW} ${dirPathWithResults}/${s}/${s}_Uniq_norm.bw"
     else
-        echo "Uniq norm bedgraph not found for $s"
-        exit 1
+        echo "Uniq norm bw not found for $s"
+        noGlobal=1
     fi
-    if [ -e ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm_sorted.bedgraph ]; then
-        allBDGfwd="${allBDGfwd} ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm_sorted.bedgraph"
-    elif  [ -e ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm.bedgraph.gz ]; then
-        zcat ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm_sorted.bedGraph
-        allBDGfwd="${allBDGfwd} ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm_sorted.bedgraph"
+    if [ -e ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm.bw ]; then
+        allBWfwd="${allBWfwd} ${dirPathWithResults}/${s}/${s}_Uniq_fwd_norm.bw"
     else
         doStrand=0
     fi
-    if [ -e ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm_sorted.bedgraph ]; then
-        allBDGrev="${allBDGrev} ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm_sorted.bedgraph"
-    elif  [ -e ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm.bedgraph.gz ]; then
-        zcat ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm.bedGraph | grep -v track | LC_ALL=C sort -k1,1 -k2,2n > ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm_sorted.bedGraph
-        allBDGrev="${allBDGrev} ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm_sorted.bedgraph"
+    if [ -e ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm.bw ]; then
+        allBWrev="${allBWrev} ${dirPathWithResults}/${s}/${s}_Uniq_rev_norm.bw"
     else
         doStrand=0
     fi
 done
-if [ $n -ne 1 ]; then
-    # When there are more than 1 bedgraph
-    # unionbedg is used to cut the genome in blocks
-    # where all bedgraph have constant values
-    # Then awk is used to perform the mean
-    bedtools unionbedg -i $allBDG | awk -v sn=$sample -v n=$n -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\"average of "n" normalized Uniq reads of "n"\" visibility=full autoScale=on alwaysZero=on windowingFunction=mean"}{n=NF-3;sum=0;for(i=4;i<=NF;i++){sum+=$i};if(sum!=0){print $1,$2,$3,sum/n}}' > ${sample}_Uniq_norm.bedGraph
-    bedGraphToBigWig ${sample}_Uniq_norm.bedGraph
-    gzip ${sample}_Uniq_norm.bedGraph
-    if [ $doStrand = 1 ]; then
-        bedtools unionbedg -i $allBDGfwd | awk -v sn=$sample -v n=$n -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\"average of "n" normalized Uniq reads forward of "n"\" visibility=full autoScale=on alwaysZero=on windowingFunction=mean"}{n=NF-3;sum=0;for(i=4;i<=NF;i++){sum+=$i};if(sum!=0){print $1,$2,$3,sum/n}}' > ${sample}_Uniq_fwd_norm.bedGraph
-        bedGraphToBigWig ${sample}_Uniq_fwd_norm.bedGraph
-        gzip ${sample}_Uniq_fwd_norm.bedGraph
-        bedtools unionbedg -i $allBDGrev | awk -v sn=$sample -v n=$n -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\"average of "n" normalized Uniq reads reverse of "n"\" visibility=full autoScale=on alwaysZero=on windowingFunction=mean"}{n=NF-3;sum=0;for(i=4;i<=NF;i++){sum+=$i};if(sum!=0){print $1,$2,$3,sum/n}}' > ${sample}_Uniq_rev_norm.bedGraph
-        bedGraphToBigWig ${sample}_Uniq_rev_norm.bedGraph
-        gzip ${sample}_Uniq_rev_norm.bedGraph
+
+if [ $noGlobal -eq 1 ]; then
+    if [ -z "$allBW" ]; then
+        echo "No combined strand coverage"
+    else
+        echo "Some combined strand coverage are missing will not compute combined strand coverage average."
     fi
 else
-    cat $allBDG | awk -v sn=$sample -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\"normalized Uniq reads of "n"\" visibility=full autoScale=on alwaysZero=on windowingFunction=mean"}$4!=0{print}' > ${sample}_Uniq_nor.bedGraph
-    bedGraphToBigWig ${sample}_Uniq_norm.bedGraph
-    gzip ${sample}_Uniq_norm.bedGraph
-    if [ $doStrand = 1 ]; then
-        cat $allBDGfwd | awk -v sn=$sample -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\"normalized Uniq reads forward of "n"\" visibility=full autoScale=on alwaysZero=on windowingFunction=mean"}{n=NF-3;sum=0;for(i=4;i<=NF;i++){sum+=$i};if(sum!=0){print $1,$2,$3,sum/n}}' > ${sample}_Uniq_fwd_norm.bedGraph
-        bedGraphToBigWig ${sample}_Uniq_fwd_norm.bedGraph
-        gzip ${sample}_Uniq_fwd_norm.bedGraph
-        cat $allBDGrev | awk -v sn=$sample -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\"normalized Uniq reads reverse of "n"\" visibility=full autoScale=on alwaysZero=on windowingFunction=mean"}{n=NF-3;sum=0;for(i=4;i<=NF;i++){sum+=$i};if(sum!=0){print $1,$2,$3,sum/n}}' > ${sample}_Uniq_rev_norm.bedGraph
-        bedGraphToBigWig ${sample}_Uniq_rev_norm.bedGraph
-        gzip ${sample}_Uniq_rev_norm.bedGraph
+    bigwigAverage --bigwigs $allBW --skipNAs --binSize $binsize -o ${sample}_Uniq_norm.bw
+fi
+if [ $doStrand = 1 ]; then
+    bigwigAverage --bigwigs $allBWfwd --skipNAs --binSize $binsize -o ${sample}_Uniq_fwd_norm.bw
+    bigwigAverage --bigwigs $allBWrev --skipNAs --binSize $binsize -o ${sample}_Uniq_rev_norm.bw
+else
+    if [ -z "$allBWfwd" ]; then
+        echo "No specific strand coverage"
+    else
+        echo "Some specific strand coverage are missing will not compute strand specific coverage."
     fi
 fi
 
