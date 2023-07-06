@@ -1,0 +1,98 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "format-version": "0.1",
+    "name": "get_filtered_barcodes_from_nested_collection",
+    "steps": {
+        "0": {
+            "annotation": "nested list from 10x workflow",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "nested list from 10x workflow",
+                    "name": "nested list from 10x workflow"
+                }
+            ],
+            "label": "nested list from 10x workflow",
+            "name": "Input dataset collection",
+            "outputs": [],
+            "position": {
+                "bottom": 278.1999969482422,
+                "height": 82.19999694824219,
+                "left": 460,
+                "right": 660,
+                "top": 196,
+                "width": 200,
+                "x": 460,
+                "y": 196
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"tag\": \"\", \"collection_type\": \"list\"}",
+            "tool_version": null,
+            "type": "data_collection_input",
+            "uuid": "90c1daea-1c38-493e-b6b7-1af4a090452e",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "7f4aa2cf-ec23-4de0-9a28-4a6c1b596063"
+                }
+            ]
+        },
+        "1": {
+            "annotation": "",
+            "content_id": "__APPLY_RULES__",
+            "errors": null,
+            "id": 1,
+            "input_connections": {
+                "input": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool Apply rules",
+                    "name": "input"
+                }
+            ],
+            "label": "get only barcodes",
+            "name": "Apply rules",
+            "outputs": [
+                {
+                    "name": "output",
+                    "type": "input"
+                }
+            ],
+            "position": {
+                "bottom": 326.6000061035156,
+                "height": 113.60000610351562,
+                "left": 753,
+                "right": 953,
+                "top": 213,
+                "width": 200,
+                "x": 753,
+                "y": 213
+            },
+            "post_job_actions": {},
+            "tool_id": "__APPLY_RULES__",
+            "tool_state": "{\"input\": {\"__class__\": \"RuntimeValue\"}, \"rules\": {\"mapping\": [{\"columns\": [0], \"editing\": false, \"type\": \"list_identifiers\"}], \"rules\": [{\"error\": null, \"type\": \"add_column_metadata\", \"value\": \"identifier0\", \"warn\": null}, {\"error\": null, \"type\": \"add_column_metadata\", \"value\": \"identifier1\", \"warn\": null}, {\"error\": null, \"invert\": false, \"target_column\": 1, \"type\": \"add_filter_matches\", \"value\": \"barcodes\", \"warn\": null}]}, \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.1.0",
+            "type": "tool",
+            "uuid": "d539776b-d2fd-46a2-b84d-7c218451e528",
+            "workflow_outputs": [
+                {
+                    "label": null,
+                    "output_name": "output",
+                    "uuid": "c4adf343-cd90-4e5d-8326-e80ed499986b"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "uuid": "7ecdb05f-1c06-4ca1-a00e-b14896dce1c8",
+    "version": 1
+}
