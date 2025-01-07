@@ -5,18 +5,17 @@
 #SBATCH --nodes 1 # We always use 1 node
 #SBATCH --ntasks 1 # In this script everything is sequencial
 #SBATCH --mem 50G # The memory needed depends on the size of the genome and the size of fastqs
-#SBATCH --cpus-per-task 24 # This allows to speed the mapping part of the pipeline
-#SBATCH --time 04:00:00 # This depends on the size of the fastqs
-#SBATCH --array=1-3 # Put here the rows from the table that need to be processed in the table
-#SBATCH --job-name RNAseq_test # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/RNAseq/ # This directory must exist, this is where will be the error and out files
-## Specific to baobab:
-##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --cpus-per-task 16 # This allows to speed the mapping part of the pipeline
+#SBATCH --time 12:00:00 # This depends on the size of the fastqs
+#SBATCH --array=2-19 # Put here the rows from the table that need to be processed in the table
+#SBATCH --job-name RNAseq # Job name that appear in squeue as well as in output and error text files
+#SBATCH --chdir /home/users/d/delislel/scratch/NET_project_RNAseq/ # This directory must exist, this is where will be the error and out files
+## Specific to UNIGE:
+#SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
 
 # This script run cutadapt to remove adapters and bad quality bases
-# make alignment with STAR ENCODE parameters
+# make alignment, counting and coverage with STAR ENCODE parameters
 # Evaluate FPKM with cufflinks
-# Coverage normalized to million mapped reads with bedtools
 
 
 ##################################
@@ -36,7 +35,8 @@ else
 fi
 # Which genome to map on
 # /!\ This script will use STAR and STAR is not 'alt-aware' so do not use a genome with alt contigs
-genome=mm39
+# genome=mm39
+genome=hg38.analysisSet
 adapterSeq="TruSeq"  # comment the non-relevant adapter type
 # adapterSeq="NextSeq"
 
@@ -54,10 +54,11 @@ dirPathForFastq="${dirPathWithResults}/fastq/"
 # third column is same for R2
 # Alternatively second column can be SRA number but third column must be filled by anything for example also the SRA number
 # fourth column is the strandness of the library: forward or reverse or unstranded
-filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20221018_testRNA/table_RNA.txt"
-filePathForGTF="${dirPathWithResults}/mergeOverlapGenesOfFilteredTranscriptsOfMus_musculus.GRCm39.104_ExonsOnly_UCSC.gtf"
-dirPathForSTARIndex="/work/updub/scratch/ldelisle/genomes/STARIndex_2.7.9a/${genome}/${genome}"
-filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
+filePathForTable="/home/users/d/delislel/scripts/net_project/RNAseq/table.txt"
+# filePathForGTF="${dirPathWithResults}/mergeOverlapGenesOfFilteredTranscriptsOfMus_musculus.GRCm39.104_ExonsOnly_UCSC.gtf"
+filePathForGTF="${dirPathWithResults}/gencode.v47.primary_assembly.annotation.gtf"
+dirPathForSTARIndex="/home/users/d/delislel/genomes/STARIndex_2.7.11a/${genome}/"
+filePathForFasta="/home/users/d/delislel/genomes/fasta/${genome}.fa"
 
 ### Specify the way to deal with dependencies:
 
@@ -70,9 +71,37 @@ filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
 # You can create it with: conda create -n rna202209 cutadapt samtools star cufflinks bedtools ucsc-bedgraphtobigwig "sra-tools>=2.11"
 # If you want to use sra you also need sra-tools>=2.11
 # Comment it if you will use module load
-condaEnvName=rna202209
+# condaEnvName=rna202209
 ######
 
+# You can choose to use singularity, then you need to define each function:
+function cutadapt() {
+  singularity exec "/cvmfs/singularity.galaxyproject.org/all/cutadapt:5.0--py312h0fa9677_0" cutadapt $*
+}
+function samtools() {
+  singularity exec "/cvmfs/singularity.galaxyproject.org/all/samtools:1.9--h91753b0_8" samtools $*
+}
+function STAR() {
+  singularity exec "/cvmfs/singularity.galaxyproject.org/all/star:2.7.11b--h5ca1c30_4" STAR $*
+}
+function cufflinks() {
+  singularity exec "/cvmfs/singularity.galaxyproject.org/all/cufflinks:2.2.1--py36_2" cufflinks $*
+}
+# Cufflinks is used in another script:
+export -f cufflinks
+function bedtools() {
+  singularity exec "/cvmfs/singularity.galaxyproject.org/all/bedtools:2.31.1--hf5e1c6e_2" bedtools $*
+}
+# bedtools is used in another script:
+export -f bedtools
+function bedGraphToBigWig() {
+  singularity exec "/cvmfs/singularity.galaxyproject.org/all/ucsc-bedgraphtobigwig:472--h9b8f530_1" bedGraphToBigWig $*
+}
+# bedtools is used in another script:
+export -f bedGraphToBigWig
+
+# And additional binds:
+export APPTAINER_BIND=$dirPathWithResults
 
 ##################################
 ####### BEGINING OF SCRIPT #######
