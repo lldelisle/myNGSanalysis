@@ -1,0 +1,1 @@
+sacct -u $USER --format=JobID%-15,JobName,Elapsed,alloccpus,State,Start,MaxRSS,Workdir%-40 -S $(date --date="1 week ago" +%Y-%m-%d)

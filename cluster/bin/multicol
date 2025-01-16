@@ -1,0 +1,47 @@
+#!/bin/bash
+# Written by JB Delisle
+
+# temporary file
+tmpfile="/tmp/multicol.XXXXXX"
+tmpfile=$(mktemp $tmpfile)
+
+# Max nb of lines and columns you can get in the terminal
+height=`tput lines`
+#height=$((height-2))
+width=`tput cols`
+
+# Execute the command
+eval "$*" > $tmpfile
+stdwidth=$(wc -L < $tmpfile)
+stdheight=$(wc -l < $tmpfile)
+
+if (( $stdwidth > 0 )) && (( $stdheight > 0 ))
+then
+  if (( $stdheight<$height ))
+  then nl=$stdheight
+  else nl=$height
+  fi
+  nc=$(((stdheight+nl-1)/nl))
+  nmc=$(((width+3)/(stdwidth+3)))
+  if (( $nc > $nmc ))
+  then nc=$nmc
+  fi
+
+  fmt="%-"$stdwidth"s"
+
+  # Print lines
+  for (( l=1; l<=$nl; l++ ))
+  do
+    for (( c=1; c<$nc; c++ ))
+    do
+      p=$(((c-1)*nl+l))
+      line=$(sed -n "${p}p" $tmpfile)
+      printf "$fmt | " "${line}"
+    done
+    p=$(((nc-1)*nl+l))
+    line=$(sed -n "${p}p" $tmpfile)
+    printf "$fmt\n" "${line}"
+  done
+
+fi
+rm $tmpfile

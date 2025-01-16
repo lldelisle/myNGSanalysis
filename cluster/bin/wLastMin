@@ -1,0 +1,2 @@
+#!/bin/bash
+watch -t -c -d -n 5 multicol find . -mmin -1 

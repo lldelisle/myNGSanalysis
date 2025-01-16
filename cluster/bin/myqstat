@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Written by L & JB Delisle
+
+echo -e '-----------| Partitions stats |-----------'
+cat <(echo 'queue CPU_used CPU_free Node_used Node_free') \
+<(sinfo -h -o "%R %C %A" | sed 's#\([^/]*\)/\([^/]*\)/.* \([^/]*\)/\([^/]*\)#\1 \2 \3 \4#g' | sort) \
+| column -t
+
+echo -e '\n----------------| My jobs |---------------'
+cat <(echo 'queue name state count') \
+<(squeue -u ${USER} -h --array -o '%.2t %.5P %.25j' | sort | uniq -c | awk '{print $3, $4, $2, $1}') \
+| column -t
+
+echo -e '\n-------------| Pending jobs |-------------'
+cat <(echo 'queue name priority count') \
+<(squeue --array -h --state="PD" -o '%.5P %.8u %.10Q %.12r' | grep -v Dependency | sort -k1,1 -k3,3nr | uniq -c | awk '{print $2, $3, $4, $1}') \
+| column -t | sed -e "s/${USER}/$(printf "\e[31m${USER}\e[0m")/g"
+

@@ -11,3 +11,5 @@ You can easily get them from the dockstore:
 You can also see them on [iwc website](https://iwc.galaxyproject.org/).
 
 There is also [a directory](./containers/) about containers and how to run RStudio server on clusters.
+
+There is [another one](./cluster) with files I put in my home of a cluster with slurm.
