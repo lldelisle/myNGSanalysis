@@ -7,3 +7,7 @@ Most of galaxy workflows has been transfered to [iwc](https://github.com/galaxyp
 You can easily get them from the dockstore:
 - [epigenetics workflows](https://dockstore.org/organizations/iwc/collections/epigenetics)
 - [transcriptomics workflows](https://dockstore.org/organizations/iwc/collections/transcriptomics)
+
+You can also see them on [iwc website](https://iwc.galaxyproject.org/).
+
+There is also [a directory](./containers/) about containers and how to run RStudio server on clusters.
