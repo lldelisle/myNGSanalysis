@@ -1,5 +1,36 @@
 # Containers
+<!-- TOC -->
 
+- [General intro](#general-intro)
+    - [Why?](#why)
+    - [What are containers?](#what-are-containers)
+    - [Important vocabulary](#important-vocabulary)
+    - [What means 'isolated' in 'isolated file system'?](#what-means-isolated-in-isolated-file-system)
+- [Application to RStudio server](#application-to-rstudio-server)
+    - [R packages](#r-packages)
+        - [Origin](#origin)
+        - [Dependencies](#dependencies)
+    - [Current situation](#current-situation)
+        - [Local RStudio](#local-rstudio)
+        - [RStudio server](#rstudio-server)
+    - [Docker vs Singularity/Apptainer](#docker-vs-singularityapptainer)
+    - [Hands-on](#hands-on)
+        - [Connect using ssh without password](#connect-using-ssh-without-password)
+            - [Setup a public key for your computer](#setup-a-public-key-for-your-computer)
+            - [Put it into the distant server](#put-it-into-the-distant-server)
+        - [To run on RStudioserver on galaxyduboule.epfl.ch with one script](#to-run-on-rstudioserver-on-galaxydubouleepflch-with-one-script)
+        - [To run on RStudioserver on SCITAS and adapt to other clusters with one script](#to-run-on-rstudioserver-on-scitas-and-adapt-to-other-clusters-with-one-script)
+        - [Step-by-step: Connect using ssh to the server of your choice and prepare everything](#step-by-step-connect-using-ssh-to-the-server-of-your-choice-and-prepare-everything)
+        - [View RStudio server on your computer](#view-rstudio-server-on-your-computer)
+        - [Remember you are on a container](#remember-you-are-on-a-container)
+        - [New package installations](#new-package-installations)
+    - [Available images](#available-images)
+    - [Use on your computer the same image as you are using on the server](#use-on-your-computer-the-same-image-as-you-are-using-on-the-server)
+    - [Reproduce your installation of RStudio server like it is on galaxyduboule.epfl.ch:](#reproduce-your-installation-of-rstudio-server-like-it-is-on-galaxydubouleepflch)
+        - [Get everything ready](#get-everything-ready)
+        - [Install packages](#install-packages)
+
+<!-- /TOC -->
 ## General intro
 
 ### Why?
