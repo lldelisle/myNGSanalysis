@@ -24,6 +24,8 @@
         - [View RStudio server on your computer](#view-rstudio-server-on-your-computer)
         - [Remember you are on a container](#remember-you-are-on-a-container)
         - [New package installations](#new-package-installations)
+            - [On galaxyduboule](#on-galaxyduboule)
+            - [On SCITAS](#on-scitas)
     - [Available images](#available-images)
     - [Use on your computer the same image as you are using on the server](#use-on-your-computer-the-same-image-as-you-are-using-on-the-server)
     - [Reproduce your installation of RStudio server like it is on galaxyduboule.epfl.ch:](#reproduce-your-installation-of-rstudio-server-like-it-is-on-galaxydubouleepflch)
@@ -369,6 +371,10 @@ Here a few hints that you are on a container:
 
 If you need to install a package that is not on the apptainer image, best would be to generate a new image with this new package but meanwhile you can install 'locally' the new packages (if it has no system dependency).
 
+##### On galaxyduboule
+
+Run a job with rstudio and connect to it.
+
 By default the apptainer image we are using is fetching the packages on a website with pre-compiled packages for ubuntu but the specific version you want may be missing so I suggest you to add `options(repos = c(getOption('repos'), "CRAN" = "https://cran.r-project.org"))` before installing a package. For example, to install monocle3 on a container based on the image `verse_with_more_packages_4.3.0_0` which is close to the current RStudio server from galaxyduboule, use:
 
 ```r
@@ -378,6 +384,47 @@ devtools::install_github('cole-trapnell-lab/monocle3', ref = "98402ed0c10cac0205
 devtools::install_version("igraph", "2.0.3")
 devtools::install_github('cole-trapnell-lab/monocle3')
 ```
+
+##### On SCITAS
+
+It seems that SCITAS protected in a way and we cannot download once we are on the RStudio through ssh tunnel so the trick is to connect in ssh to the cluster:
+
+```
+ssh jed.epfl.ch
+```
+
+Go where your Sif image is (adapt to your case):
+
+```
+cd Sif_Images
+```
+
+Execute and install the package in your 'library path specific for this version', for example to install pheatmap on the 4.4.2_0:
+
+
+```
+apptainer exec verse_with_more_packages_4.4.2_0.sif Rscript -e '.libPaths("~/R/rocker-rstudio/4.4.2_0");install.packages("pheatmap")'
+```
+
+or to install monocle3 at a specific hash:
+
+```
+apptainer exec verse_with_more_packages_4.4.2_0.sif Rscript -e '.libPaths("~/R/rocker-rstudio/4.4.2_0");options(repos = c(getOption("repos"), "CRAN" = "https://cran.r-project.org"));devtools::install_github("cole-trapnell-lab/monocle3", ref = "98402ed0c10cac020524bebbb9300614a799f6d1")'
+```
+
+There is an error because BiocSingular is not available:
+
+```
+apptainer exec verse_with_more_packages_4.4.2_0.sif Rscript -e '.libPaths("~/R/rocker-rstudio/4.4.2_0");options(repos = c(getOption("repos"), "CRAN" = "https://cran.r-project.org"));BiocManager::install("BiocSingular")'
+```
+
+Then again the monocle3 installation:
+
+```
+apptainer exec verse_with_more_packages_4.4.2_0.sif Rscript -e '.libPaths("~/R/rocker-rstudio/4.4.2_0");options(repos = c(getOption("repos"), "CRAN" = "https://cran.r-project.org"));devtools::install_github("cole-trapnell-lab/monocle3", ref = "98402ed0c10cac020524bebbb9300614a799f6d1")'
+```
+
+It is done.
 
 ### Available images
 
