@@ -31,6 +31,7 @@
     - [Reproduce your installation of RStudio server like it is on galaxyduboule.epfl.ch:](#reproduce-your-installation-of-rstudio-server-like-it-is-on-galaxydubouleepflch)
         - [Get everything ready](#get-everything-ready)
         - [Install packages](#install-packages)
+- [Other applications](#other-applications)
 
 <!-- /TOC -->
 ## General intro
@@ -583,3 +584,10 @@ if (!"SeuratWrappers" %in% installed.packages()) {
     remotes::install_github("satijalab/seurat-wrappers", upgrade = "never", ref = "d28512f804d5fe05e6d68900ca9221020d52cf1d")
 }
 ```
+
+## Other applications
+
+I think container is really a great way to ensure reproducibility in the long term. Better than conda.
+I am switching all my hpc scripts to use singularity.
+
+The greatest resource for images is [the galaxy repository](https://depot.galaxyproject.org/singularity/).
