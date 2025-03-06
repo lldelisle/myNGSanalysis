@@ -13,7 +13,7 @@ PORT=8030
 my_local_port=8787
 # Make the ssh tunnel
 echo "Openning tunnel"
-ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_galaxyduboule}@galaxyduboule.epfl.ch
+ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_galaxyduboule}@192.168.202.69
 # Ask for the container version:
 read -p "Enter the version of verse_with_more_packages you want to use [4.4.2_0]:" sif_version
 sif_version=${sif_version:-4.4.2_0}
@@ -35,6 +35,8 @@ echo $run_batch
 jobid="${run_batch##* }"
 
 echo "Your job has id $jobid"
+
+get_ssh_tunnel_command="cat rstudio-server.job.${jobid}.err | grep ssh"
 
 # Thanks to ChatGPT edition:
 

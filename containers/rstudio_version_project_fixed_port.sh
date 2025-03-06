@@ -28,6 +28,9 @@ LIBDIR=${HOME}/R/rocker-rstudio/${sif_version}
 # It must starts with comma and then add the paths separated by comma
 # For SCITAS use:
 # othermounts=",/scratch/$(id -un)/"
+# I don't know really why but if I don't do this I cannot run as my own user:
+othermounts=",/etc/passwd"
+
 
 # Optional but useful for copy-paste:
 name_host_machine=192.168.202.69
