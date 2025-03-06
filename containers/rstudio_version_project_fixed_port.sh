@@ -1,21 +1,20 @@
 #!/bin/sh
-#SBATCH --time=12:00:00 # This is the maximum length of your R session
 #SBATCH --signal=USR2
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=30G # Here change to the memory you think you will use
 #SBATCH --output=rstudio-server.job.%j.out
 #SBATCH --error=rstudio-server.job.%j.err
 
-# First argument is verse_with_more_packages version
-sif_version=$1
-# Second argument is the name of the project (without space)
-project_name=$2
+# First argument is the port
+PORT=$1
+# Second argument is verse_with_more_packages version
+sif_version=$2
+# Third argument is the name of the project (without space)
+project_name=$3
 
 ### CUSTOMIZE THIS PART ###
 
-# Put here the path of your sif file:
-SIF="$HOME/Duboule-server/UPDUB COMMON/Sif_Images/verse_with_more_packages_${sif_version}.sif"
+# Put here the directory of your sif files:
+SIF_DIR="$HOME/nas/lab.data/sif.images/"
 
 # Put here the path where you want your packages to be installed
 # to be able to have them the next time you start a new container
@@ -30,8 +29,8 @@ LIBDIR=${HOME}/R/rocker-rstudio/${sif_version}
 # For SCITAS use:
 # othermounts=",/scratch/$(id -un)/"
 
-# Fixed port:
-PORT=8000
+# Optional but useful for copy-paste:
+name_host_machine=192.168.202.69
 
 ### END ###
 
@@ -41,6 +40,15 @@ if [ ! -z project_name ]; then
    LIBDIR=${HOME}/${project_name}/R/rocker-rstudio/${sif_version}
    othermounts=${othermounts},${HOME}/${project_name}/rstudio:${HOME}/.local/share/rstudio/
    mkdir -p ${HOME}/${project_name}/rstudio
+fi
+SIF="${SIF_DIR}/verse_with_more_packages_${sif_version}.sif"
+
+# Get the singularity image if it does not exists
+if [ ! -e ${SIF} ]; then
+   export APPTAINER_CACHEDIR=$PWD/.cache
+   singularity pull docker://lldelisle/verse_with_more_packages:${sif_version}
+   mkdir -p "$SIF_DIR"
+   mv verse_with_more_packages_${sif_version}.sif "$SIF_DIR"/
 fi
 
 mkdir -p $LIBDIR
@@ -108,6 +116,9 @@ singularity exec --cleanenv "$SIF" \
     /usr/lib/rstudio-server/bin/rserver --www-port ${PORT} \
             --www-address=$(hostname -i) \
             --server-user=$APPTAINERENV_USER \
+            --auth-none=0 \
+            --auth-pam-helper-path=pam-helper \
+            --auth-stay-signed-in-days=30 \
             --auth-timeout-minutes=0 \
             --rsession-path=/etc/rstudio/rsession.sh
 printf 'rserver exited' 1>&2
