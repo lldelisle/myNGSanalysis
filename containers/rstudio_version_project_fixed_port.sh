@@ -120,6 +120,7 @@ singularity exec --cleanenv "$SIF" \
             --www-address=$(hostname -i) \
             --server-user=$APPTAINERENV_USER \
             --auth-none=0 \
+            --auth-encrypt-password=0 \
             --auth-pam-helper-path=pam-helper \
             --auth-stay-signed-in-days=30 \
             --auth-timeout-minutes=0 \

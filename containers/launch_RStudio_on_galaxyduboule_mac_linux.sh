@@ -87,6 +87,6 @@ if [ $elapsed_time -ge $timeout ]; then
     echo ""
     echo "Once your job is running you will be able to access RStudio server in your browser."
     echo "At http://localhost:${my_local_port}"
-    echo "To get the user and password you need to run"
+    echo "To get the user and password (in theory you don't need it) you need to run"
     echo "ssh ${username_on_galaxyduboule}@192.168.202.69 cat rstudio-server.job.${jobid}.err | grep -B1 \"password\""
 fi

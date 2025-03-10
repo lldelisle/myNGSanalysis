@@ -92,7 +92,7 @@ if ($elapsed_time -ge $timeout) {
     Write-Host ""
     Write-Host "Once your job is running you can access RStudio server in your browser"
     Write-Host "At http://localhost:${my_local_port}."
-    Write-Host "To get the user and password you need to run"
+    Write-Host "To get the user and password (in theory you don't need it) you need to run"
     Write-Host "ssh ${username_on_galaxyduboule}@192.168.202.69 cat rstudio-server.job.${jobid}.err | grep -B1 password"
     Write-Host "Do not forget to open the tunnel in a separate powershell with the following command"
     Write-Host "ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_galaxyduboule}@192.168.202.69"

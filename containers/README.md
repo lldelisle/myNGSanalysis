@@ -329,7 +329,7 @@ What is happening is something like this:
 
 Small parenthesis: if you want to run 2 RStudio at the same time, it is possible! Just run a second time `sbatch xxx` and use a port forwarding to another port like 8788. If I get `ssh -N -f -L 8787:127.0.1.1:9175 ldelisle@jed.epfl.ch` in the err file, I will do `ssh -N -f -L 8788:127.0.1.1:9175 ldelisle@jed.epfl.ch`. And I can open a new tab on my browser with `localhost:8788`
 
-You need to use the login and password that were written in the err file. In my example:
+You need to use the login and password that were written in the err file (except on galaxyduboule cdf where in theory you don't need). In my example:
 ```
    user: lldelisle
    password: OhArBMOy5/eWu1v+ZrQ6
