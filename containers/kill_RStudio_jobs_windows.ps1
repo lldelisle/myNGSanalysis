@@ -1,5 +1,5 @@
-$username_on_server = "mayran"
-$address_of_server = "galaxyduboule.epfl.ch"
+$username_on_server = "your_login"
+$address_of_server = "192.168.202.69"
 
 $check_squeue = "squeue -u $username_on_server -o '%.8i %.38j %.8T %.10m %.8M %.10l %.20S'"
 Write-Host "Here are your jobs in the queue"

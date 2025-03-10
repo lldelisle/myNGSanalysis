@@ -26,8 +26,7 @@ LIBDIR=${HOME}/R/rocker-rstudio/4.4.2_0
 # othermounts=",/scratch/$(id -un)/"
 
 # Optional but useful for copy-paste:
-name_host_machine=galaxyduboule.epfl.ch
-# name_host_machine=jed.epfl.ch
+name_host_machine=jed.epfl.ch
 
 ### END ###
 
