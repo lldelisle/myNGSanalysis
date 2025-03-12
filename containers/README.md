@@ -268,6 +268,8 @@ cat <(echo 'queue CPU_used CPU_free Node_used Node_free') \
 
 When your job is green you can click on "Connect to RStudio Server".
 
+Do not forget to terminate your session (top right) when you are done. To avoid paying for nothing, you can cancel your job(s) when you are done. To do this, come back to your dashboard and click on 'Delete'.
+
 #### Step-by-step: Connect using ssh to the server of your choice and prepare everything
 
 If you are on galaxyduboule.epfl.ch, I already pulled the images on `mountDuboule/UPDUB COMMON/Sif_Images/` so you don't need to do this step:
