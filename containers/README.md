@@ -20,6 +20,7 @@
             - [Put it into the distant server](#put-it-into-the-distant-server)
         - [To run on RStudioserver on galaxyduboule.epfl.ch with one script](#to-run-on-rstudioserver-on-galaxydubouleepflch-with-one-script)
         - [To run on RStudioserver on SCITAS and adapt to other clusters with one script](#to-run-on-rstudioserver-on-scitas-and-adapt-to-other-clusters-with-one-script)
+        - [To run RStudioserver on UNIGE using open-on-demand service](#to-run-rstudioserver-on-unige-using-open-on-demand-service)
         - [Step-by-step: Connect using ssh to the server of your choice and prepare everything](#step-by-step-connect-using-ssh-to-the-server-of-your-choice-and-prepare-everything)
         - [View RStudio server on your computer](#view-rstudio-server-on-your-computer)
         - [Remember you are on a container](#remember-you-are-on-a-container)
@@ -33,6 +34,7 @@
         - [Install packages](#install-packages)
 - [Other applications](#other-applications)
 
+<!-- /TOC -->
 <!-- /TOC -->
 ## General intro
 
@@ -98,11 +100,13 @@ The main issue is that everyone needs to have the same version of R (currently 4
 
 ### Docker vs Singularity/Apptainer
 
-Docker is the most popular container software. It has a GUI on Linux, MacOS and Windows. It is great for container development. It offers a large repository (docker hub) with a lot of base images including ubuntu, rstudio server... It requires administration access which is not possible for shared servers. So you can use docker on your laptop (probably next training).
+Docker is the most popular container software. It has a GUI on Linux, MacOS and Windows. It is great for container development. It offers a large repository (docker hub) with a lot of base images including ubuntu, rstudio server... It requires administration access which is not possible for shared servers. So you can use docker on your laptop (see [this section](#use-on-your-computer-the-same-image-as-you-are-using-on-the-server)).
 
 Singularity was the name of the original project but disagreement between the founder and the developers lead to two different projects: one adopted to the Linux Foundation changed its name to Apptainer while SingularityCE is the second one still developped at Sylabs. Apptainer/Singularity work without administration access. Image files are '.sif' (a file format develpped by SingularityCE). You can easily create a '.sif' from a docker image (and this is what most of developpers do). So on servers/linux/WSL2 we can use apptainer.
 
 ### Hands-on
+
+For UNIGE people jump to [this section](#to-run-rstudioserver-on-unige-using-open-on-demand-service)
 
 #### Connect using ssh without password
 
@@ -220,6 +224,49 @@ You will need to choose the version of the docker image. For example, use `4.4.2
 If you are on windowns you will need to open the tunnel separately on another powershell console.
 
 Do not forget to terminate your session (top right) before the end of the day. To avoid paying for nothing, you can cancel your jobs when you are done. To do this, use [this script](./kill_RStudio_jobs_mac_linux.sh) if you are on linux or mac and [this script](./kill_RStudio_jobs_windows.ps1) if you are on windows. Do not forget to update the first lines to your case.
+
+#### To run RStudioserver on UNIGE using open-on-demand service
+
+For UNIGE people everything is simplified thanks to the Open-on-demand.
+
+Useful links to have more info:
+
+    - [Open-on-demand documentation from UNIGE](https://doc.eresearch.unige.ch/hpc/how_to_use_openondemand).
+    - [Open-on-demand architecture documentation](https://osc.github.io/ood-documentation/latest/architecture.html#container-context)
+
+Open-on-demand is a service provided by the HPC in order to simplify access to HPC resources.
+
+At UNIGE HPC has 3 clusters: baobab (old), bamboo (new), yggdrasil (astro). For the moment Open-on-demand is deployed on baobab (accessible without VPN) and bamboo (only accessible with VPN).
+
+Simply click on the [baobab](https://openondemand.baobab.hpc.unige.ch/) or [bamboo](https://openondemand.baobab.hpc.unige.ch/) link.
+
+You will be redirected to Switch edu-ID that is used to login and link your HPC account.
+
+If you have issues, check [this post](https://hpc-community.unige.ch/t/ood-issue-with-openondemand-authentication-for-outsiders/3857).
+
+You directly arrives on your dashboard and you can click on RStudio.
+
+For the training we will use an image available on HPC disk (the first one from the example values), partition shared-cpu, running time 02:00:00 memory 4 GB and 1 core.
+
+(For a real analysis see [here](#available-images) to understand which are the possible images available but the first time you download and convert an image from docker it takes 5-10 minutes)
+
+Your job is blue = 'Queued' and will become green 'Running'.
+
+If your job is blue for long. You can check when it will be scheduled by clicking on Clusters > Shell Access and then
+
+```bash
+squeue -l -u $(id -u)
+```
+
+You can also check the occupancy of the cluster by
+
+```bash
+cat <(echo 'queue CPU_used CPU_free Node_used Node_free') \
+<(sinfo -h -o "%R %C %A" | sed 's#\([^/]*\)/\([^/]*\)/.* \([^/]*\)/\([^/]*\)#\1 \2 \3 \4#g' | sort) \
+| column -t
+```
+
+When your job is green you can click on "Connect to RStudio Server".
 
 #### Step-by-step: Connect using ssh to the server of your choice and prepare everything
 
@@ -439,7 +486,7 @@ The 4.3.0_0 was built to contain as many packages as possible installed by any u
 
 The 4.4.1_7 was built to reproduce data in Hocine's paper. It has been built gradually adding missing packages and can be updated to add more packages.
 
-I plan to do a 4.4.2 (new R version that should be released in October 31st 2024) and I am currently collecting the packages that this new image should have, feel free to contribute.
+A 4.4.2 version has been released in November 2024 and I am currently collecting the packages that the next image (4.4.3) should have, feel free to contribute.
 
 Of course, the best would be that either we manage to do an image that fit everyone needs or everyone is able to push its own image to dockerhub (one image per project for example).
 
