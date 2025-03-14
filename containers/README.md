@@ -231,8 +231,8 @@ For UNIGE people everything is simplified thanks to the Open-on-demand.
 
 Useful links to have more info:
 
-    - [Open-on-demand documentation from UNIGE](https://doc.eresearch.unige.ch/hpc/how_to_use_openondemand).
-    - [Open-on-demand architecture documentation](https://osc.github.io/ood-documentation/latest/architecture.html#container-context)
+- [Open-on-demand documentation from UNIGE](https://doc.eresearch.unige.ch/hpc/how_to_use_openondemand).
+- [Open-on-demand architecture documentation](https://osc.github.io/ood-documentation/latest/architecture.html#container-context)
 
 Open-on-demand is a service provided by the HPC in order to simplify access to HPC resources.
 
@@ -241,6 +241,8 @@ At UNIGE HPC has 3 clusters: baobab (old), bamboo (new), yggdrasil (astro). For 
 Simply click on the [baobab](https://openondemand.baobab.hpc.unige.ch/) or [bamboo](https://openondemand.baobab.hpc.unige.ch/) link.
 
 You will be redirected to Switch edu-ID that is used to login and link your HPC account.
+
+For this you need to have a switch edu ID and have linked it to your UNIGE account. See [here](https://plone.unige.ch/distic/pub/compte-switch-edu-id/comment-creer-compte-switch-edu-id#EN).
 
 If you have issues, check [this post](https://hpc-community.unige.ch/t/ood-issue-with-openondemand-authentication-for-outsiders/3857).
 
