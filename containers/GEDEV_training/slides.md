@@ -254,7 +254,7 @@ At UNIGE HPC has 3 clusters: baobab (old), bamboo (new), yggdrasil (astro). For 
 
 ## Access the open-on-demand dashboard
 
-Simply click on the [baobab](https://openondemand.baobab.hpc.unige.ch/) or [bamboo](https://openondemand.baobab.hpc.unige.ch/) link.
+Simply click on the [baobab](https://openondemand.baobab.hpc.unige.ch/) or [bamboo](https://openondemand.bamboo.hpc.unige.ch/) link.
 
 You will be redirected to Switch edu-ID that is used to login and link your HPC account.
 
