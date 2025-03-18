@@ -32,13 +32,17 @@ Lucille Delisle
 
 Lucille Delisle
 
+Mathematics/Programming studies
+
 PhD in biology
 
 Bioinformatician since 2015 (nearly 10 years at EPFL in Duboule lab)
 
 50% in Andrey lab and 50% in Herrera lab since March 2025
 
-Highly motivated by open data open software open trainings
+Highly motivated by open data / open software / open trainings
+
+Involved in the ![Galaxy](./galaxy_logo_25percent.png)  community
 
 ---
 
