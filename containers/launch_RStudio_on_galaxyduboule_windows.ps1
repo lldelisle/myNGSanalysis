@@ -60,7 +60,7 @@ while ($elapsed_time -lt $timeout) {
     }
     Write-Host "Your job is $status"
     if ($status -eq "RUNNING") {
-        $tunnel_command = ssh ${username_on_galaxyduboule}@192.168.202.69 $get_ssh_tunnel_command 2> /dev/null
+        $tunnel_command = ssh ${username_on_galaxyduboule}@192.168.202.69 "$get_ssh_tunnel_command" 2> $null
         while ($tunnel_command -eq "") {
             Write-Host "RStudio has not started yet, probably because the singularity image is not here"
             Write-Host "Here is the end of the error file"
@@ -68,11 +68,11 @@ while ($elapsed_time -lt $timeout) {
             Write-Host ""
             Write-Host ""
             Start-Sleep -Seconds 2s
-            $tunnel_command = ssh ${username_on_galaxyduboule}@192.168.202.69 $get_ssh_tunnel_command 2> /dev/null
+            $tunnel_command = ssh ${username_on_galaxyduboule}@192.168.202.69 "$get_ssh_tunnel_command" 2> $null
         }
         Write-Host "Your job is running you can access RStudio server in your browser at http://localhost:${my_local_port}."
         Write-Host "Your username and passwords are"
-        ssh ${username_on_galaxyduboule}@192.168.202.69 cat rstudio-server.job.${jobid}.err | grep -B1 "password"
+        ssh ${username_on_galaxyduboule}@192.168.202.69 "cat rstudio-server.job.${jobid}.err | grep -B1 'password'"
 
         Write-Host "Do not forget to open the tunnel in a separate powershell with the following command"
         Write-Host "ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_galaxyduboule}@192.168.202.69"
@@ -88,12 +88,12 @@ if ($elapsed_time -ge $timeout) {
     Write-Host "ssh ${username_on_galaxyduboule}@192.168.202.69 "squeue -j $jobid -h -o '%T'""
     Write-Host ""
     Write-Host "You can check all running/queuing jobs by"
-    Write-Host "ssh ${username_on_galaxyduboule}@192.168.202.69 $check_squeue 2> $null"
+    Write-Host "ssh ${username_on_galaxyduboule}@192.168.202.69 ""$check_squeue"""
     Write-Host ""
     Write-Host "Once your job is running you can access RStudio server in your browser"
     Write-Host "At http://localhost:${my_local_port}."
     Write-Host "To get the user and password (in theory you don't need it) you need to run"
-    Write-Host "ssh ${username_on_galaxyduboule}@192.168.202.69 cat rstudio-server.job.${jobid}.err | grep -B1 password"
+    Write-Host "ssh ${username_on_galaxyduboule}@192.168.202.69 ""cat rstudio-server.job.${jobid}.err | grep -B1 password"""
     Write-Host "Do not forget to open the tunnel in a separate powershell with the following command"
     Write-Host "ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_galaxyduboule}@192.168.202.69"
 }
