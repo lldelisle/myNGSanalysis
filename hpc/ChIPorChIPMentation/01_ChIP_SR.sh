@@ -211,7 +211,7 @@ fi
 wait
 
 if [ ! -e ${sample}_macs_SR200_norm.bedGraph.gz ]; then
-  nbtags=$(grep "total tags in treatment" ${sample}_macs_SR200.log | awk '{print $NF}')
+  nbtags=$(grep "tags after filtering in treatment" ${sample}_macs_SR200.log | awk '{print $NF}')
   zcat ${sample}_macs_SR200.bedGraph.gz | awk -v s=$sample -v n=$nbtags -v OFS="\t" 'BEGIN{print "track type=bedGraph name=\""s" SR200 normalized by million tags\" visibility=full autoScale=on windowingFunction=mean"}NR>1{$4=$4/n*1e6; print}' > ${sample}_macs_SR200_norm.bedGraph
   bedGraphToBigWig ${sample}_macs_SR200_norm.bedGraph ${filePathForFasta}.fai ${sample}_macs_SR200_norm.bw
   gzip ${sample}_macs_SR200_norm.bedGraph &
