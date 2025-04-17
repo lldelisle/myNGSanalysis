@@ -7,7 +7,7 @@
 #SBATCH --mem 10G # The memory needed depends on the number of samples
 #SBATCH --cpus-per-task 1 # This does not use multiple CPUs
 #SBATCH --time 02:00:00 # This depends on the number of samples
-#SBATCH --job-name RNAseq_R # Job name that appear in squeue as well as in output and error text files
+#SBATCH --job-name RNAseq_R_pc # Job name that appear in squeue as well as in output and error text files
 #SBATCH --chdir /home/users/d/delislel/scripts/whatever/RNAseq/ # This directory must exist, this is where will be the error and out files
 ## Specific to UNIGE:
 #SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
@@ -216,12 +216,12 @@ keepGenesUsedForNorm <- F
   fi
   # Adjust the samplesplan
   if [ ! $(grep "htseq_count_file" $filePathForSamplesPlan) ]; then
-    cat $filePathForSamplesPlan | awk -v pa=$dirPathWithResults 'BEGIN{print "htseq_count_file"}NR>1{print pa"/allFinalFiles/counts_FPKM/htseqCount_"$1".txt"}' > htseqCol.txt
+    cat $filePathForSamplesPlan | awk -v pa=$dirPathWithResults 'BEGIN{print "htseq_count_file"}NR==1{for (i=1;i<=NF;i++){if($i=="sample"){col=i}}}NR>1{print pa"/allFinalFiles/counts_FPKM/htseqCount_"$col".txt"}' > htseqCol.txt
     paste -d "\t" $filePathForSamplesPlan htseqCol.txt > ${filePathForSamplesPlan}_withPaths
     rm htseqCol.txt
   fi
   if [ ! $(grep "cufflinks_file" $filePathForSamplesPlan) ]; then
-    cat $filePathForSamplesPlan | awk -v pa=$dirPathWithResults 'BEGIN{print "cufflinks_file"}NR>1{print pa"/allFinalFiles/counts_FPKM/FPKM_"$1".txt"}' > CuffCol.txt
+    cat $filePathForSamplesPlan | awk -v pa=$dirPathWithResults 'BEGIN{print "cufflinks_file"}NR==1{for (i=1;i<=NF;i++){if($i=="sample"){col=i}}}NR>1{print pa"/allFinalFiles/counts_FPKM/FPKM_"$col".txt"}' > CuffCol.txt
     if [ -e ${filePathForSamplesPlan}_withPaths ];then
       mv ${filePathForSamplesPlan}_withPaths tmp
       paste -d "\t" tmp CuffCol.txt > ${filePathForSamplesPlan}_withPaths
@@ -355,6 +355,126 @@ if [ ! -e ${dirPathWithResults}/plots_default${suffix}/PC1.png ]; then
   Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step3-graphClusteringPCAGenes.R $configFile
 fi
 
+# Same graphs but only on protein coding genes:
+
+# Extract protein coding:
+dir=${dirPathWithResults}/mergedTables${suffix}/
+if [ ! -e ${dir}/AllHTSeqCounts_subset_onlypc.txt ]; then
+  Rscript ${dirPathWithDependencies}/toolBoxForMutantAndWTGenomes/scripts/subsetForProteinCoding.R "${filePathForGTF}" ${dir}/AllHTSeqCounts_subset.txt Ens_ID
+fi
+if [ ! -e ${dir}/AllCufflinks_Simplified_subset_onlypc.txt ]; then
+  Rscript ${dirPathWithDependencies}/toolBoxForMutantAndWTGenomes/scripts/subsetForProteinCoding.R "${filePathForGTF}" ${dir}/AllCufflinks_Simplified_subset.txt gene_id
+fi
+
+# Then basic plots using protein_coding
+
+if [ ! -e ${dirPathWithResults}/plots_default_onlypc${suffix}/PC1.pdf ]; then
+  configFile="configFileRNAseq_step3_pc${suffix}.R"
+
+  echo "
+### Required for all steps ###
+RNAseqFunctionPath <- \"${dirPathWithDependencies}/rnaseq_rscripts/RNAseqFunctions.R\"
+# This file should be a tabulated file with at least one column called
+# 'sample'. Optionnaly, the paths to the counts tables and FPKM tables can be
+# provided under the column called: htseq_count_file and cufflinks_file.
+samplesPlan <- \"${filePathForSamplesPlan}\"
+
+
+
+#### STEP 3 - PLOTS #### Required You can put here either the FPKM norm values (subsetted or not)
+#### or the count norm values obtained after DESeq2
+tableWithNormalizedExpression <- \"${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified_subset_onlypc.txt\"
+# In case you are using a file with both raw counts and FPKM you need to choose
+# which values you want to plot.  If set to T, only columns called FPKM_sample
+# will be used.
+useFPKM <- T
+# Optional
+outputFolder <- \"${dirPathWithResults}/plots_default_onlypc${suffix}/\"
+# By default pdf is used as output. If set to T, png will be used.
+usePng <- F
+# You can provide color for each value of each factor in you samples plan to
+# have constistant graphs for PCA, correlation and genes.
+
+
+### Common to PCA and clustering ### In DESeq2 they restrict to the 500 most
+### variant genes. If you want to keep all genes, comment the line or put
+### 1000000.
+restrictToNMoreVariantGenes <- 500
+
+### PCA ### Put here the number of PC you want to see (0=do not perform PCA,
+### 1=Only look at first component, 2=look at the 2 first etc...)
+nbOfPC <- 3
+# If the nbOfPC is greater than 1, you will have a barchart of each PC and you
+# may want to use different parameters to identify your samples using the
+# column names of the samples plan.
+PCA1D <- list(fill = \"${column1}\", color = \"${column2}\")
+# Possible personalizations are : fill is for the color of the bar, alpha is
+# for the transparency, color is for the color of the border of the bar
+# linetype is for the type of border of the bar If you do not want to use one
+# of the parameter, just remove it from the list.
+
+# If the nbOfPC is greater than 2, you will have projection in 2 dimension and
+# to identify your sample you may want to use the column names of the samples
+# plan.
+PCA2D <- list(color = \"${column1}\", shape = \"${column2}\")
+# Possible personalizations are : color is for the color of the symbol, alpha
+# is for the transparency, shape is for the shape of the symbol. You can also
+# choose 2 colors fill and color. If so, the fill will be inside and the color
+# will be the border. If you do not want to use one of the parameter, just
+# remove it from the list.
+
+# Do you want to have the contribution of each gene to each PC (T=yes, F=no).
+getGeneContributionToPCA <- F
+
+### Clustering ###
+
+# Do you want to perform a correlation matrix and clustering (T=yes, F=no)
+plotMatrixAndClustering <- T
+
+### Genes ###
+# One gene per line. The first line of the gene file should correspond to a
+# column in the expression file.
+# fileWithGenes <- \"~/rnaseq_rscripts/example/genesHoxDandAround.txt\"
+# By default, the title of the plot is the id provided in the fileWithGenes but
+# you can add a meaning full name like gene_short_name if it is provided in the
+# tableWithNormalizedExpression.
+# geneIDToAdd<-'gene_short_name'
+# By default, the values of expression plotted are log2(1+expression) (when T,
+# if F the raw expression will be plotted.)
+useLogExpression <- T
+# By default, each gene is plotted on an adjusted scale. If
+# useSameYmaxForAllGenes is T, all genes will be plotted with the same y axis.
+useSameYmaxForAllGenes <- T
+# A factor which will be used as x axis.
+xaxisForGenes <- \"Tissue\"
+plotGenesPara <- list(color = \"Line\", shape = \"Replicate\")
+# Possible personalizations are :
+# color is for the color of the symbol, 
+# alpha is for the transparency,
+# shape is for the shape of the symbol.
+# You can also choose 2 colors fill and color. If so, the fill will be inside and the color will be the border.
+# If you do not want to use one of the parameter, just remove it from the list.
+
+# If you only want a heatmap and not one gene per one gene. Put it to T.
+doNotPlotGeneByGene <- F
+# If you want to have a heatmap with the genes provided in the list. All values
+# of plotGenesPara will be used to annotate the samples.
+addGlobalHeatmap <- T
+# By default, genes are clustered by euclidean distance and complete
+# clustering. If you want to keep the original order. Put keepGeneOrder to T.
+keepGeneOrder <- F
+# By default, samples are not clustered.
+clusterSamples <- F
+" > ${configFile}
+  Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step3-graphClusteringPCAGenes.R $configFile
+fi
+
+if [ ! -e ${dirPathWithResults}/plots_default_onlypc${suffix}/PC1.png ]; then
+  configFile="configFileRNAseq_step3_pc${suffix}_png.R"
+  sed "s/usePng <- F/usePng <- T/" configFileRNAseq_step3_pc${suffix}.R > ${configFile}
+  Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step3-graphClusteringPCAGenes.R $configFile
+fi
+
 if [ ! -z ${deseqcolumn} ]; then
   if [ ! -e ${dirPathWithResults}/DESeq2${suffix}/DESeq2Analysis.txt ]; then
     configFile="configFileRNAseq_step2${suffix}.R"
@@ -391,6 +511,49 @@ gtfFile <- \"${filePathForGTF}\"
 # reduced formula ~1. Put F to keep Wald and put T to use LRT.
 changeTest <- F
 outputDESeqTable <- \"${dirPathWithResults}/DESeq2${suffix}/DESeq2Analysis.txt\"
+# If you want to have another table with only significant genes abs(l2FC) > 1.5
+# and corrected p-value < 0.05
+outputSignificantTable <- T
+
+" > ${configFile}
+    Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step2-DESeq2.R $configFile
+  fi
+
+  if [ ! -e ${dirPathWithResults}/DESeq2_pc${suffix}/DESeq2Analysis.txt ]; then
+    configFile="configFileRNAseq_step2_pc${suffix}.R"
+
+    echo "
+### Required for all steps ###
+RNAseqFunctionPath <- \"${dirPathWithDependencies}/rnaseq_rscripts/RNAseqFunctions.R\"
+# This file should be a tabulated file with at least one column called
+# 'sample'. Optionnaly, the paths to the counts tables and FPKM tables can be
+# provided under the column called: htseq_count_file and cufflinks_file.
+samplesPlan <- \"${filePathForSamplesPlan}\"
+
+
+#### STEP 2 - DESEQ 2 ANALYSIS ####
+# Required
+tableWithCounts <- \"${dirPathWithResults}/mergedTables${suffix}/AllHTSeqCounts_subset_onlypc.txt\"
+# Specify here the name of the column which contains the gene IDs (they need to
+# be unique).
+geneIDColCounts <- \"Ens_ID\"
+# For the DESeq2 analysis you need to specify a factor on which you want to do
+# the analysis: This needs to be a name of a column of the samplesPlan file.
+factor <- \"${deseqcolumn}\"
+
+# Optional
+# This can be table from cufflinks or cuffdiff or Biomart to annotate genes.
+# You will need to choose a file with at least one column with the Ensembl Gene IDs.
+tableWithAnnotations <- \"${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified_norm.txt\"
+# Specify here the name of the column which contains the gene IDs (it must
+# match with the content of the geneID from the table with counts).
+geneIDColInAnnotations <- \"gene_id\"
+# You can also provide a gtf:
+gtfFile <- \"${filePathForGTF}\"
+# Default test is Wald but you can change to likelihood ratio test (LRT) with
+# reduced formula ~1. Put F to keep Wald and put T to use LRT.
+changeTest <- F
+outputDESeqTable <- \"${dirPathWithResults}/DESeq2_pc${suffix}/DESeq2Analysis.txt\"
 # If you want to have another table with only significant genes abs(l2FC) > 1.5
 # and corrected p-value < 0.05
 outputSignificantTable <- T
