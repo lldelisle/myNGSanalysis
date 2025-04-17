@@ -8,9 +8,10 @@
 #SBATCH --cpus-per-task 1 # This does not use multiple CPUs
 #SBATCH --time 02:00:00 # This depends on the number of samples
 #SBATCH --job-name RNAseq_R # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /home/ldelisle/scripts/scitas_sbatchhistory/2023/20230213_Aurelie_Chase_mm39 # This directory must exist, this is where will be the error and out files
-## Specific to baobab:
-##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --chdir /home/users/d/delislel/scripts/whatever/RNAseq/ # This directory must exist, this is where will be the error and out files
+## Specific to UNIGE:
+#SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --account=herrerap
 
 # This script run Rscripts to merge counts and FPKM
 # Generate first plots
@@ -29,27 +30,31 @@ dirPathWithConfigFiles="$PWD/"
 # Put in dirPathWithResults the directory
 # where a directory will be created
 # for each sample (should match the one in 01_RNAseq_XX.sh)
-dirPathWithResults="/scratch/ldelisle/RNAseq_Bolt/"
-filePathForGTF="${dirPathWithResults}/mergeOverlapGenesOfFilteredTranscriptsOfMus_musculus.GRCm39.108_ExonsCDSOnly_UCSC.gtf"
+dirPathWithResults="$HOME/scratch/whatever/RNAseq/"
+# filePathForGTF="${dirPathWithResults}/mergeOverlapGenesOfFilteredTranscriptsOfMus_musculus.GRCm39.108_ExonsCDSOnly_UCSC.gtf"
+filePathForGTF="${dirPathWithResults}/gencode.v47.primary_assembly.annotation.gtf"
 # This is where should be clone the 2 github repositories:
 # https://github.com/lldelisle/toolBoxForMutantAndWTGenomes
 # https://github.com/lldelisle/rnaseq_rscripts
-dirPathWithDependencies="/home/ldelisle/softwares/"
+dirPathWithDependencies="$HOME/scripts/"
 # A samples plan is a tabular table with at least one column named 'sample'
 # This should match the table of 01_RNAseq_XX.sh
 # The sample names should not start with letter and not contain parenthesis or -
-filePathForSamplesPlan="/home/ldelisle/scripts/scitas_sbatchhistory/2023/20230213_Aurelie_Chase_mm39/samplesplan.txt"
+filePathForSamplesPlan="${dirPathWithConfigFiles}/samples_plan_both.txt"
 # Sometimes some chromosomes are excluded from analysis:
-chrsToRemove="chrX,chrY,chrM"
-# chrsToRemove="chrM"
+# chrsToRemove="chrX,chrY,chrM"
+chrsToRemove="chrM"
 # For the plots you can use columns in your samplesplan
-column1=genotype
-column2=sex
+column1=Tissue
+column2=Library
 # If you don't have
 # column1=sample
 # column2=sample
 # If you don't want to do deseq2 just comment:
-deseqcolumn=genotype
+deseqcolumn=Tissue
+
+# If you are running 2 analysis in the same directory use suffix for config files and output directories:
+suffix="_both"
 
 ### Specify the way to deal with dependencies:
 
@@ -63,9 +68,33 @@ deseqcolumn=genotype
 # You can choose to use a conda environment to solve R and associated packages
 # You can create it with: conda create -n RNAseq_R_202302 r-base r-colorspace bioconductor-deseq2 r-ggplot2 r-pheatmap r-rcolorbrewer  bioconductor-rtracklayer
 # Comment it if you will use module load
-condaEnvName=RNAseq_R_202302
+# condaEnvName=RNAseq_R_202302
 ######
 
+# You can choose to use singularity, then you need to define each function:
+pathToImages=/home/share/andrey_lab/singularity/
+# Or use a personnal space
+# pathToImages=/home/users/d/delislel/scratch/images/
+
+verse_with_more_packages_version=4.4.3_0
+
+if [ ! -e ${pathToImages}/verse_with_more_packages_${verse_with_more_packages_version}.sif ]; then
+  # Get the docker image
+  cwd=$PWD
+  cd ${pathToImages}
+  export APPTAINER_CACHEDIR=$PWD/.cache
+  singularity pull docker://lldelisle/verse_with_more_packages:${verse_with_more_packages_version}
+  cd $cwd
+fi
+function R() {
+  singularity exec "${pathToImages}/verse_with_more_packages_${verse_with_more_packages_version}.sif" R $*
+}
+function Rscript() {
+  singularity exec "${pathToImages}/verse_with_more_packages_${verse_with_more_packages_version}.sif" Rscript $*
+}
+
+# And additional binds:
+export APPTAINER_BIND=$HOME/scratch/,$(realpath $HOME/scratch),/cvmfs/data.galaxyproject.org/
 
 ##################################
 ####### BEGINING OF SCRIPT #######
@@ -103,19 +132,19 @@ then
 fi
 
 # Check the 2 github:
-if [ ! -e ${dirPathWithDependencies}rnaseq_rscripts/ ]; then
+if [ ! -e ${dirPathWithDependencies}/rnaseq_rscripts/ ]; then
   echo "${dirPathWithDependencies}rnaseq_rscripts/ does not exists please clone https://github.com/lldelisle/rnaseq_rscripts"
   exit 1
 fi
-cd ${dirPathWithDependencies}rnaseq_rscripts/
+cd ${dirPathWithDependencies}/rnaseq_rscripts/
 echo "Version of rnaseq_rscripts"
 git rev-parse HEAD
 
-if [ ! -e ${dirPathWithDependencies}toolBoxForMutantAndWTGenomes/ ]; then
-  echo "${dirPathWithDependencies}toolBoxForMutantAndWTGenomes/ does not exists please clone https://github.com/lldelisle/toolBoxForMutantAndWTGenomes"
+if [ ! -e ${dirPathWithDependencies}/toolBoxForMutantAndWTGenomes/ ]; then
+  echo "${dirPathWithDependencies}/toolBoxForMutantAndWTGenomes/ does not exists please clone https://github.com/lldelisle/toolBoxForMutantAndWTGenomes"
   exit 1
 fi
-cd ${dirPathWithDependencies}toolBoxForMutantAndWTGenomes/
+cd ${dirPathWithDependencies}/toolBoxForMutantAndWTGenomes/
 echo "Version of toolBoxForMutantAndWTGenomes"
 git rev-parse HEAD
 
@@ -126,8 +155,8 @@ cd "${dirPathWithConfigFiles}"
 # This script will merge the tables
 
 # First generate tables
-if [ ! -e ${dirPathWithResults}/mergedTables/AllCufflinks_Simplified_subset.txt ]; then
-  configFile="configFileRNAseq_step1.R"
+if [ ! -e ${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified_subset.txt ]; then
+  configFile="configFileRNAseq_step1${suffix}.R"
 
   echo "
 ### Required for all steps ###
@@ -139,7 +168,7 @@ samplesPlan <- \"${filePathForSamplesPlan}\"
 
 #### STEP 1 - MERGE TABLES ####
 # If the merged tables are not already generated:
-outputFolderForStep1 <- \"${dirPathWithResults}/mergedTables/\"
+outputFolderForStep1 <- \"${dirPathWithResults}/mergedTables${suffix}/\"
 # Needed for DESeq2: Do you want to merge counts? T=yes F or commented=no
 mergeCounts <- T
 # Optional: subset the count table Do you want to remove some genes from the
@@ -147,7 +176,7 @@ mergeCounts <- T
 subsetCounts <- T
 # If the table with counts have already been generated and you just want to
 # remove some genes.
-# initialTableWithCount<-'${dirPathWithDependencies}/rnaseq_rscripts/example/mergedTables/AllHTSeqCounts.txt'
+# initialTableWithCount<-'${dirPathWithDependencies}/rnaseq_rscripts/example/mergedTables${suffix}/AllHTSeqCounts.txt'
 # If you provide the initialTableWithCount you need to provide the name of the
 # column with the ensembl id.
 # geneIDColInInitialTable<-'Ens_ID'
@@ -168,7 +197,7 @@ chrToRemove <- c(\"${chrsToRemove//,/\",\"}\")
 normFPKMWithAnoukMethod <- T
 # If the table with FPKM have already been generated and you just want to
 # normalize it.
-# initialTableWithFPKM<-'${dirPathWithDependencies}/rnaseq_rscripts/example/mergedTables/AllCufflinks_Simplified.txt'
+# initialTableWithFPKM<-'${dirPathWithDependencies}/rnaseq_rscripts/example/mergedTables${suffix}/AllCufflinks_Simplified.txt'
 # Usually, it is recommanded to remove mitochondrial genes before doing the
 # normalization. In some cases, it can also be useful to remove the sex
 # chromosomes (put c('chrX','chrY','chrM')).  If you do not want to remove any
@@ -182,7 +211,7 @@ keepGenesUsedForNorm <- F
 " > ${configFile}
 
   if [ ! -e genes${chrsToRemove//,/_}.txt ]; then
-    Rscript ${dirPathWithDependencies}toolBoxForMutantAndWTGenomes/scripts/getGeneListFromChrAndGTF.R $filePathForGTF ${chrsToRemove} ./
+    Rscript ${dirPathWithDependencies}/toolBoxForMutantAndWTGenomes/scripts/getGeneListFromChrAndGTF.R $filePathForGTF ${chrsToRemove} ./
     mv genesIn${chrsToRemove}from* genes${chrsToRemove//,/_}.txt
   fi
   # Adjust the samplesplan
@@ -207,19 +236,19 @@ keepGenesUsedForNorm <- F
     configFile=${configFile}_withPaths
   fi
 
-  Rscript ${dirPathWithDependencies}rnaseq_rscripts/step1-generateTables.R $configFile
+  Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step1-generateTables.R $configFile
   # copy to GEO:
   mkdir -p ${dirPathWithResults}/toGEO
-  cp ${dirPathWithResults}/mergedTables/AllCufflinks_Simplified.txt ${dirPathWithResults}/toGEO/
-  cp ${dirPathWithResults}/mergedTables/AllCufflinks_Simplified_subset.txt ${dirPathWithResults}/toGEO/
-  cp ${dirPathWithResults}/mergedTables/AllHTSeqCounts_subset.txt ${dirPathWithResults}/toGEO/
+  cp ${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified.txt ${dirPathWithResults}/toGEO/AllCufflinks_Simplified${suffix}.txt
+  cp ${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified_subset.txt ${dirPathWithResults}/toGEO/AllCufflinks_Simplified_subset${suffix}.txt
+  cp ${dirPathWithResults}/mergedTables${suffix}/AllHTSeqCounts_subset.txt ${dirPathWithResults}/toGEO/AllHTSeqCounts_subset${suffix}.txt
 fi
 
 
 # Then basic plots
 
-if [ ! -e ${dirPathWithResults}/plots_default/PC1.pdf ]; then
-  configFile="configFileRNAseq_step3.R"
+if [ ! -e ${dirPathWithResults}/plots_default${suffix}/PC1.pdf ]; then
+  configFile="configFileRNAseq_step3${suffix}.R"
 
   echo "
 ### Required for all steps ###
@@ -233,13 +262,13 @@ samplesPlan <- \"${filePathForSamplesPlan}\"
 
 #### STEP 3 - PLOTS #### Required You can put here either the FPKM norm values (subsetted or not)
 #### or the count norm values obtained after DESeq2
-tableWithNormalizedExpression <- \"${dirPathWithResults}/mergedTables/AllCufflinks_Simplified_subset.txt\"
+tableWithNormalizedExpression <- \"${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified_subset.txt\"
 # In case you are using a file with both raw counts and FPKM you need to choose
 # which values you want to plot.  If set to T, only columns called FPKM_sample
 # will be used.
 useFPKM <- T
 # Optional
-outputFolder <- \"${dirPathWithResults}/plots_default/\"
+outputFolder <- \"${dirPathWithResults}/plots_default${suffix}/\"
 # By default pdf is used as output. If set to T, png will be used.
 usePng <- F
 # You can provide color for each value of each factor in you samples plan to
@@ -316,12 +345,19 @@ keepGeneOrder <- F
 # By default, samples are not clustered.
 clusterSamples <- F
 " > ${configFile}
-  Rscript ${dirPathWithDependencies}rnaseq_rscripts/step3-graphClusteringPCAGenes.R $configFile
+  Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step3-graphClusteringPCAGenes.R $configFile
+fi
+
+
+if [ ! -e ${dirPathWithResults}/plots_default${suffix}/PC1.png ]; then
+  configFile="configFileRNAseq_step3${suffix}_png.R"
+  sed "s/usePng <- F/usePng <- T/" configFileRNAseq_step3${suffix}.R > ${configFile}
+  Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step3-graphClusteringPCAGenes.R $configFile
 fi
 
 if [ ! -z ${deseqcolumn} ]; then
-  if [ ! -e ${dirPathWithResults}/DESeq2/DESeq2Analysis.txt ]; then
-    configFile="configFileRNAseq_step2.R"
+  if [ ! -e ${dirPathWithResults}/DESeq2${suffix}/DESeq2Analysis.txt ]; then
+    configFile="configFileRNAseq_step2${suffix}.R"
 
     echo "
 ### Required for all steps ###
@@ -334,7 +370,7 @@ samplesPlan <- \"${filePathForSamplesPlan}\"
 
 #### STEP 2 - DESEQ 2 ANALYSIS ####
 # Required
-tableWithCounts <- \"${dirPathWithResults}/mergedTables/AllHTSeqCounts_subset.txt\"
+tableWithCounts <- \"${dirPathWithResults}/mergedTables${suffix}/AllHTSeqCounts_subset.txt\"
 # Specify here the name of the column which contains the gene IDs (they need to
 # be unique).
 geneIDColCounts <- \"Ens_ID\"
@@ -345,7 +381,7 @@ factor <- \"${deseqcolumn}\"
 # Optional
 # This can be table from cufflinks or cuffdiff or Biomart to annotate genes.
 # You will need to choose a file with at least one column with the Ensembl Gene IDs.
-tableWithAnnotations <- \"${dirPathWithResults}/mergedTables/AllCufflinks_Simplified_norm.txt\"
+tableWithAnnotations <- \"${dirPathWithResults}/mergedTables${suffix}/AllCufflinks_Simplified_norm.txt\"
 # Specify here the name of the column which contains the gene IDs (it must
 # match with the content of the geneID from the table with counts).
 geneIDColInAnnotations <- \"gene_id\"
@@ -354,12 +390,12 @@ gtfFile <- \"${filePathForGTF}\"
 # Default test is Wald but you can change to likelihood ratio test (LRT) with
 # reduced formula ~1. Put F to keep Wald and put T to use LRT.
 changeTest <- F
-outputDESeqTable <- \"${dirPathWithResults}/DESeq2/DESeq2Analysis.txt\"
+outputDESeqTable <- \"${dirPathWithResults}/DESeq2${suffix}/DESeq2Analysis.txt\"
 # If you want to have another table with only significant genes abs(l2FC) > 1.5
 # and corrected p-value < 0.05
 outputSignificantTable <- T
 
 " > ${configFile}
-    Rscript ${dirPathWithDependencies}rnaseq_rscripts/step2-DESeq2.R $configFile
+    Rscript ${dirPathWithDependencies}/rnaseq_rscripts/step2-DESeq2.R $configFile
   fi
 fi
