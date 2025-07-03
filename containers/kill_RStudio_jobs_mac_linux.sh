@@ -1,6 +1,6 @@
-username_on_server=ldelisle
-name_host_machine=galaxyduboule.epfl.ch
+username_on_server=your_login
 name_host_machine=jed.epfl.ch
+name_host_machine=192.168.202.69
 
 check_squeue="squeue -u $username_on_server -o '%.8i %.38j %.8T %.10m %.8M %.10l %.20S'"
 echo "Here are your jobs in the queue"

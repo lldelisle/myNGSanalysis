@@ -1,11 +1,10 @@
 # Containers
 <!-- TOC -->
 
-- [General intro](#general-intro)
-    - [Why?](#why)
-    - [What are containers?](#what-are-containers)
-    - [Important vocabulary](#important-vocabulary)
-    - [What means 'isolated' in 'isolated file system'?](#what-means-isolated-in-isolated-file-system)
+- [Why?](#why)
+- [What are containers?](#what-are-containers)
+- [Important vocabulary](#important-vocabulary)
+- [What means 'isolated' in 'isolated file system'?](#what-means-isolated-in-isolated-file-system)
 - [Application to RStudio server](#application-to-rstudio-server)
     - [R packages](#r-packages)
         - [Origin](#origin)
@@ -18,7 +17,7 @@
         - [Connect using ssh without password](#connect-using-ssh-without-password)
             - [Setup a public key for your computer](#setup-a-public-key-for-your-computer)
             - [Put it into the distant server](#put-it-into-the-distant-server)
-        - [To run on RStudioserver on galaxyduboule.epfl.ch with one script](#to-run-on-rstudioserver-on-galaxydubouleepflch-with-one-script)
+        - [To run on RStudioserver on workstationduboule CDF with one script](#to-run-on-rstudioserver-on-workstationduboule-cdf-with-one-script)
         - [To run on RStudioserver on SCITAS and adapt to other clusters with one script](#to-run-on-rstudioserver-on-scitas-and-adapt-to-other-clusters-with-one-script)
         - [To run RStudioserver on UNIGE using open-on-demand service](#to-run-rstudioserver-on-unige-using-open-on-demand-service)
         - [Step-by-step: Connect using ssh to the server of your choice and prepare everything](#step-by-step-connect-using-ssh-to-the-server-of-your-choice-and-prepare-everything)
@@ -35,14 +34,12 @@
 - [Other applications](#other-applications)
 
 <!-- /TOC -->
-<!-- /TOC -->
-## General intro
 
-### Why?
+## Why?
 
-The more I think about it the more I think this is the best way to do reproducible science and be able to have parallel projects without being stuck in an old version of a software. This is already used in galaxy (not on galaxyduboule because I had not enough time to set it up) and I really think this should be used for RStudio server.
+The more I think about it the more I think this is the best way to do reproducible science and be able to have parallel projects without being stuck in an old version of a software. This is already used in galaxy (not on galaxy.epfl.ch because I had not enough time to set it up but it is on galaxyduboule at CDF) and I really think this should be used for RStudio server.
 
-### What are containers?
+## What are containers?
 
 I've been inspired by: [SIB course material](https://sib-swiss.github.io/containers-introduction-training/latest/) and [Carpentries course](https://carpentries-incubator.github.io/docker-introduction/).
 
@@ -53,7 +50,7 @@ Containers are:
   - containers share the kernel with the host OS
   - VMs bring the entire operating system
 
-### Important vocabulary
+## Important vocabulary
 
 ![Cookie containers](./containers-cookie-cutter.png)
 
@@ -65,7 +62,7 @@ Everyone can then download this image on its computer or on any server and then 
 
 You can personalize each cookie (remove one part with a knife, paste a bit of daw to make it larger) but then you loose the reproducibility so as much as possible it is better to modify the Dockerfile, regenerate an image and create a container from the new image. Also remember that the container has a short life usually hours so you may not want to spend time on customizing something that will last so shortly...
 
-### What means 'isolated' in 'isolated file system'?
+## What means 'isolated' in 'isolated file system'?
 
 By default there in no communication between what is on your computer and what is in your container.
 
@@ -152,7 +149,9 @@ type %USERPROFILE%\.ssh\id_ed25519.pub
 
 For UNIGE people, you need to add your public key to your UNIGE account [here](https://my-account.unige.ch/main/home) under the “My SSH public key” section. You can connect to 3 servers: `login1.baobab.hpc.unige.ch` or `login1.yggdrasil.hpc.unige.ch` or `login1.bamboo.hpc.unige.ch` with your ISIS username.
 
-For UPDUB/UPZENG people, you can connect to `galaxyduboule.epfl.ch` (our server) or `jed.epfl.ch` (SCITAS) with your gaspar username.
+For EPFL people, you can connect to `jed.epfl.ch` (SCITAS) with your gaspar username.
+
+For people from Duboule's lab CDF, you can connect to `192.168.202.69` and the login and password were decided by you.
 
 For mac users, open the terminal, for windows users open the PowerShell console and type:
 
@@ -160,7 +159,7 @@ For mac users, open the terminal, for windows users open the PowerShell console 
 ssh username@yourserveradress
 ```
 
-For example, I do: `ssh ldelisle@galaxyduboule.epfl.ch`
+For example, I do: `ssh ldelisle@jed.epfl.ch`
 
 You are now connected to the server.
 
@@ -192,23 +191,22 @@ And reconnect:
 ssh username@yourserveradress
 ```
 
-For example, I do: `ssh ldelisle@galaxyduboule.epfl.ch`
+For example, I do: `ssh ldelisle@jed.epfl.ch`
 
 In theory, you should be connected without needing to put your password. You can exit.
 
-#### To run on RStudioserver on galaxyduboule.epfl.ch with one script
+#### To run on RStudioserver on workstationduboule (CDF) with one script
 
-First copy the file which is in `Duboule-lab/UPDUB\ COMMON/Sif_Images/rstudio_version_project.sh` (also [here](./rstudio_version_project.sh)) in your directory on Duboule-lab. You must not change the content, only the header with time and mem.
+I copied the file [here](./rstudio_version_project_fixed_port.sh) in `nas/lab.data/common.scripts/rstudio_version_project_fixed_port.sh`. You must not change the content.
 
-If you have a mac or a linux, you can then copy [this file](./launch_RStudio_on_galaxyduboule_mac_linux.sh). If you have a windows this is [this file](./launch_RStudio_on_galaxyduboule_windows.ps1). You need to change the first lines to set your gaspar name, where you copied the `rstudio_version_project.sh` (`mountDuboule` indicates the Duboule-lab server) and which port you want to use on galaxyduboule.epfl.ch.
+If you have a mac or a linux, you can then copy [this file](./launch_RStudio_on_galaxyduboule_mac_linux.sh) on your computer. If you have a windows this is [this file](./launch_RStudio_on_galaxyduboule_windows.ps1). You need to change the first lines to set your user name (the one you decided) and which port you want to use on `192.168.202.69`.
 
 If you have a mac or a linux, run in a terminal `bash launch_RStudio_on_galaxyduboule_mac_linux.sh`. If you have a windows, you can open the `launch_RStudio_on_galaxyduboule_windows.ps1` with the powershell ISE, select the whole code and click on "Run selection" on top.
+You will need to choose the version of the docker image. For example, use `4.4.2_0`. Then the name of the project, if you want one (do not put space!) and other specifications which have default values. Finally you will see the job number and a list of all jobs submitted to the cluster etc... Simply follow the instructions.
 
-You will need to choose the version of the docker image. For example, use `4.4.2_0`. Then the name of the project (do not put space!). Finally you will see the job number and a list of all jobs submitted to galaxyduboule.epfl.ch. Check your number if the status (ST column) is R, this means running.
+If you are on windowns you will need to open the tunnel separately on another powershell console.
 
-If you are on mac or linux. You can open a web browser at `localhost:8787` and start using RStudio server. If you are on windowns you will need to open the tunnel, separately.
-
-Do not forget to terminate your session (top right) before the end of the day. To allow other job to take the spot, you can cancel your jobs. To do this, use [this script](./kill_RStudio_jobs_mac_linux.sh) if you are on linux or mac and [this script](./kill_RStudio_jobs_windows.ps1) if you are on windows.
+Do not forget to terminate your session (top right) before the end of the day. To allow other job to take the spot, you can cancel your jobs. To do this, use [this script](./kill_RStudio_jobs_mac_linux.sh) if you are on linux or mac and [this script](./kill_RStudio_jobs_windows.ps1) if you are on windows. Don't forget to change the header before launching it.
 
 
 #### To run on RStudioserver on SCITAS (and adapt to other clusters) with one script
@@ -274,7 +272,7 @@ Do not forget to terminate your session (top right) when you are done. To avoid 
 
 #### Step-by-step: Connect using ssh to the server of your choice and prepare everything
 
-If you are on galaxyduboule.epfl.ch, I already pulled the images on `mountDuboule/UPDUB COMMON/Sif_Images/` so you don't need to do this step:
+If you are on 192.168.202.69, I already pulled the image on `nas/lab.data/sif.images` so you don't need to do this step:
 
 Pull a docker image (let's use the last image with RStudio server I created).
 
@@ -286,8 +284,8 @@ This takes some time... and at the end you should have a file ending by `.sif`, 
 
 A way to use it simply is:
 ```bash
-# On galaxyduboule.epfl.ch:
-apptainer exec mountDuboule/UPDUB\ COMMON/Sif_Images/verse_with_more_packages_4.4.2_0.sif R
+# On 192.168.202.69:
+apptainer exec nas/lab.data/sif.images/verse_with_more_packages_4.4.2_0.sif R
 # Elsewhere:
 apptainer exec verse_with_more_packages_4.4.2_0.sif R
 ```
@@ -304,7 +302,7 @@ data(ggseqlogo_sample)
 
 ggseqlogo( seqs_dna$MA0001.1 )
 # Adapt the path...
-ggsave("mountDuboule/Lucille/test.png")
+ggsave("wherever/test.png")
 ```
 
 Quit using `quit()`.
@@ -313,23 +311,19 @@ But what we want is to have RStudio.
 
 If you are on a shared server, you cannot work in the front-end, you need to send a slurm job.
 
-If you are on galaxyduboule.epfl.ch, in theory you could work here but then we have conflict between galaxy and unclosed RStudio server sessions so let's changed our habits... On the galaxyduboule.epfl.ch server there is a job scheduler. It takes care to attribute memory and CPUs so the machine is used at best of its capacity. For the moment, RStudio server was running outside of the job scheduler hoping that it will never conflict with galaxy jobs because there is a lot of memory available and RStudio is not using so much CPUs.
+If you are on 192.168.202.69 (galaxyduboule CDF), in theory you could work here but then we have conflict between galaxy and unclosed RStudio server sessions so let's changed our habits... On the 192.168.202.69 (galaxyduboule CDF) server there is a job scheduler. It takes care to attribute memory and CPUs so the machine is used at best of its capacity. For the moment, RStudio server was running outside of the job scheduler hoping that it will never conflict with galaxy jobs because there is a lot of memory available and RStudio is not using so much CPUs.
 
 The way a job scheduler work (in our case SLURM) is: you can ask to schedule a job and then the scheduler put you in the queue and at one point gives you a slot, so you can launch your commands. If your command uses more memory than asked your command will fail and in our case RStudio server will restart. At the end of the runtime your job is 'cancelled' so it is stopped.
 
-I wrote you a template with everything to run a job to a slurm scheduler. You can find it [here](./example_slurm_rstudio_4.4.2_0.sh).
+I wrote you a template with everything to run a job to a slurm scheduler. You can find it [here](./example_slurm_rstudio_4.4.2_0.sh) but there are 2 other scripts which are better I think which are: [this one if you have a fixed port](./rstudio_version_project_fixed_port.sh) and [this one if you don't](./rstudio_version_project_SCITAS.sh).
 
-**For UPDUB people on galaxyduboule.epfl.ch:**
+**For UPDUB people on 192.168.202.69 (galaxyduboule CDF):**
 
-I put a copy in the common UPDUB server but the up to date version will be in this repository and someone could modify this file...
+I put a copy in the nas server but the up to date version will be in this repository in case someone modifies this file, copy the one with fixed port again...
 
-You need to copy this file if you want to modify it.
-
-You can copy it in your directory of the common server. Open it and motify the first part if you need.
-
-Then submit your job using your copy or the template:
+Then submit your job using (do not all use 8030, check [this file](./launch_RStudio_on_galaxyduboule_mac_linux.sh) to see the port repartition):
 ```bash
-sbatch mountDuboule/example_slurm_rstudio_4.4.2_0.sh
+sbatch -t 1:00:00 nas/lab.data/common.scripts/rstudio_version_project_fixed_port.sh 8030 4.4.2_0
 ```
 
 **For other cases:**
@@ -369,7 +363,7 @@ Small explanation on how it works and what is hidden in the bash script that you
 - Accessing RStudio directly from the server with a graphical interface would be super slow.
 - We will do a SSH Tunnel to forward the port of the server on our computer. The command line is super simple and is given in the err file that we just displayed. In my case:
 ```bash
-ssh -N -f -L 8787:127.0.1.1:8335 ldelisle@galaxyduboule.epfl.ch
+ssh -N -f -L 8787:127.0.1.1:8335 ldelisle@jed.epfl.ch
 ```
 
 Details:
@@ -383,18 +377,16 @@ What is happening is something like this:
 
 ![tunnel](./tunnel_schema.jpg)
 
-Small parenthesis: if you want to run 2 RStudio at the same time, it is possible! Just run a second time `sbatch xxx` and use a port forwarding to another port like 8788. If I get `ssh -N -f -L 8787:127.0.1.1:9175 ldelisle@galaxyduboule.epfl.ch` in the err file, I will do `ssh -N -f -L 8788:127.0.1.1:9175 ldelisle@galaxyduboule.epfl.ch`. And I can open a new tab on my browser with `localhost:8788`
+Small parenthesis: if you want to run 2 RStudio at the same time, it is possible! Just run a second time `sbatch xxx` and use a port forwarding to another port like 8788. If I get `ssh -N -f -L 8787:127.0.1.1:9175 ldelisle@jed.epfl.ch` in the err file, I will do `ssh -N -f -L 8788:127.0.1.1:9175 ldelisle@jed.epfl.ch`. And I can open a new tab on my browser with `localhost:8788`
 
-You need to use the login and password that were written in the err file. In my example:
+You need to use the login and password that were written in the err file (except on galaxyduboule cdf where in theory you don't need). In my example:
 ```
-   user: ldelisle
+   user: lldelisle
    password: OhArBMOy5/eWu1v+ZrQ6
 ```
 (Don't save this password it changes each time you start a container)
 
-If you are using galaxyduboule.epfl.ch, it will bring you to the same project you had in the previous rstudio server. This can be confusing... that's why in the version in one script you can define projects.
-
-Sometimes on galaxyduboule.epfl.ch the project from the list do not work but if you click on Open project and you navigate to the file it works (this is because your home is `/data/home` and apptainer only knows `/home` which is a symlink to `/data/home` so use `/home` in your scripts if you want to be able to use them with apptainer).
+Sometimes on galaxyduboule CDF the project from the list do not work but if you click on Open project and you navigate to the file it works (this is because your home is `/data/home` and apptainer only knows `/home` which is a symlink to `/data/home` so use `/home` in your scripts if you want to be able to use them with apptainer).
 
 **IMPORTANT**
 
