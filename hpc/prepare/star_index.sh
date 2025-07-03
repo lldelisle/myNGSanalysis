@@ -7,11 +7,12 @@
 #SBATCH --mem 50G # The memory needed depends on the size of the genome
 #SBATCH --cpus-per-task 24 # This allows to speed the indexing
 #SBATCH --time 3:00:00 # This depends on the size of the fasta
-#SBATCH --array=1-2 # Put here the rows from the table that need to be processed in the table
+#SBATCH --array=2-2 # Put here the rows from the table that need to be processed in the table
 #SBATCH --job-name star_index # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/ # This directory must exists, this is where will be the error and out files
+#SBATCH --chdir /home/users/d/delislel/scratch/alphaTC1/ # This directory must exists, this is where will be the error and out files
 ## Specific to baobab:
-##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --account herrerap
 
 ##################################
 #### TO SET FOR EACH ANALYSIS ####
@@ -26,12 +27,12 @@ nbOfThreads=${SLURM_CPUS_PER_TASK}
 # All genomes are registered into a table where
 # first column is the genome name
 # second column is the absolute path for fasta
-filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20220921_test_index/table_genomes.txt"
+filePathForTable="$HOME/scripts/alphatc1-clone-9/prepare/genomes_table.txt"
 
 # STAR index may be incompatible between versions
 # Therefore it may be interested to keep a record of the STAR version used
 # Substitute the name of your genome by __genome__
-dirPathForSTARIndex="/work/updub/scratch/ldelisle/genomes/STARIndex_2.7.9a/__genome__"
+basenamePathForB2Index="$PWD/genomes/STAR_2.7.11b/__genome__"
 
 ### Specify the way to deal with dependencies:
 
@@ -44,10 +45,21 @@ dirPathForSTARIndex="/work/updub/scratch/ldelisle/genomes/STARIndex_2.7.9a/__gen
 # module purge
 # module load Miniconda3/4.9.2
 # or use from home:
-export PATH=$PATH:/home/ldelisle/softwares/STAR-2.7.9a/bin/Linux_x86_64/
+# export PATH=$PATH:/home/ldelisle/softwares/STAR-2.7.9a/bin/Linux_x86_64/
 # You can choose to use a conda environment to solve star dependencies
 # Comment it if you will use module load
 # condaEnvName=rna202210
+
+# You can choose to use singularity, then you need to define each function:
+pathToImages=/cvmfs/singularity.galaxyproject.org/all/
+# I don't know why on bamboo on clusters it does not work...
+# pathToImages=/home/users/d/delislel/scratch/images/
+if [ ! -e "$pathToImages/star:2.7.11b--h5ca1c30_5" ]; then
+    wget -nc -O "$pathToImages/star:2.7.11b--h5ca1c30_5" "http://datacache.galaxyproject.org/singularity/all/star:2.7.11b--h5ca1c30_5"
+fi
+function STAR() {
+    singularity exec "$pathToImages/star:2.7.11b--h5ca1c30_5" STAR $*
+}
 
 ##################################
 ####### BEGINING OF SCRIPT #######

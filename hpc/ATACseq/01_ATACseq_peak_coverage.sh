@@ -8,10 +8,11 @@
 #SBATCH --cpus-per-task 24 # This allows to speed the mapping part of the pipeline
 #SBATCH --time 04:00:00 # This depends on the size of the fastqs
 #SBATCH --array=1-8 # Put here the rows from the table that need to be processed in the table
-#SBATCH --job-name ATACseq_test # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/ATAC/ # This directory must exist, this is where will be the error and out files
+#SBATCH --job-name ATACseq # Job name that appear in squeue as well as in output and error text files
+#SBATCH --chdir /home/users/d/delislel/scratch/alphaTC1/ATACseq/ # This directory must exist, this is where will be the error and out files
 ## Specific to baobab:
-##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --account herrerap
 
 # This script run cutadapt with Nextera PE adapters
 # alignment with Bowtie2 --very-sensitive (end-to-end) --no-discordant --dovetail -X 1000
@@ -30,7 +31,7 @@
 nbOfThreads=${SLURM_CPUS_PER_TASK}
 # Which genome to map on
 # /!\ This script will use bowtie2 and bowtie2 is not 'alt-aware' so do not use a genome with alt contigs
-genome=mm10
+genome=mm39
 
 ### Specify the paths
 
@@ -42,19 +43,19 @@ dirPathWithResults="$PWD/"
 dirPathForFastq="${dirPathWithResults}/fastq/"
 # This script will use fromMacs2BdgToSimplifiedBdgAndBw.sh
 # The last version of the script is available at
-# https://raw.githubusercontent.com/lldelisle/scriptsForAmandioEtAl2021/main/scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh
+# https://github.com/lldelisle/myNGSanalysis/raw/refs/heads/main/hpc/helper_scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh
 # If it does not exists
 # The python script will be put in dirPathForScripts
-dirPathForScripts="/home/ldelisle/scripts/Scitas_template_bashScript/"
+dirPathForScripts="$HOME/scripts/Scitas_template_bashScript/"
 # All samples are registered into a table where
 # first column is the sample name
 # second column is the path of the R1 fastq relatively to dirPathForFastq
 # third column is same for R2
 # Alternatively second column can be SRA number but third column must be filled by anything for example also the SRA number
-filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20221018_testATAC/table_ATAC.txt"
+filePathForTable="$HOME/scripts/alphatc1-clone-9/ATACseq/table_ATAC.txt"
 
-basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/${genome}"
-filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
+basenamePathForB2Index="/cvmfs/data.galaxyproject.org/byhand/${genome}/bowtie2_index/${genome}/${genome}"
+filePathForFasta="/cvmfs/data.galaxyproject.org/byhand/${genome}/sam_indexes/${genome}/${genome}.fa"
 
 picardCommand="picard"
 # For baobab:
@@ -70,8 +71,70 @@ picardCommand="picard"
 # You can choose to use a conda environment to solve cutadapt/bowtie2/samtools/bedtools/picard/macs2/bedgraphtobigwig dependencies
 # I created mine with: conda create -n atac202209 cutadapt samtools bedtools bowtie2 picard macs2 ucsc-bedgraphtobigwig
 # Comment it if you will use module load
-condaEnvName=atac202209
+# condaEnvName=atac202209
 
+# You can choose to use singularity, then you need to define each function:
+pathToImages=/cvmfs/singularity.galaxyproject.org/all/
+# I don't know why on bamboo on clusters it does not work...
+# pathToImages=/home/users/d/delislel/scratch/images/
+
+# In order to run the download only once
+# This block is only executed for the first sample
+images_needed="bowtie2:2.5.4--he96a11b_5 cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 bedtools:2.31.1--hf5e1c6e_2 ucsc-bedgraphtobigwig:472--h9b8f530_1 picard:3.3.0--hdfd78af_0 macs2:2.2.9.1--py38h0020b31_1"
+if [ ${SLURM_ARRAY_TASK_ID} = ${SLURM_ARRAY_TASK_MIN} ]; then
+  for image in $images_needed; do
+    if [ ! -e "$pathToImages/$image" ]; then
+      wget -nc -O "$pathToImages/$image" "http://datacache.galaxyproject.org/singularity/all/$image"
+    fi
+  done
+else
+  echo "Waiting for the first sample to get all images."
+  i=0
+  while [[ "$i" -lt 20 ]]; do
+    sleep 1m
+    all_exists=1
+    for image in $images_needed; do
+      if [ ! -e "$pathToImages/$image" ]; then
+        all_exists=0
+      fi
+    done
+    if [ $all_exists = "1" ]; then
+      break
+    fi
+    ((i++))
+  done
+  if [ $all_exists = "0" ]; then
+    echo "After 20 minutes some images are not downloaded"
+    echo "Checkout what happened or download them before running"
+    exit 1
+  fi
+fi
+function bowtie2() {
+    singularity exec "$pathToImages/bowtie2:2.5.4--he96a11b_5" bowtie2 $*
+}
+function cutadapt() {
+  singularity exec "$pathToImages/cutadapt:5.0--py312h0fa9677_0" cutadapt $*
+}
+function samtools() {
+  singularity exec "$pathToImages/samtools:1.11--h6270b1f_0" samtools $*
+}
+function bedtools() {
+  singularity exec "$pathToImages/bedtools:2.31.1--hf5e1c6e_2" bedtools $*
+}
+function bedGraphToBigWig() {
+  singularity exec "$pathToImages/ucsc-bedgraphtobigwig:472--h9b8f530_1" bedGraphToBigWig $*
+}
+# bedGraphToBigWig is used in another script:
+export -f bedGraphToBigWig
+export pathToImages=$pathToImages
+function picard() {
+  singularity exec "$pathToImages/picard:3.3.0--hdfd78af_0" picard $*
+}
+function macs2() {
+  singularity exec "$pathToImages/macs2:2.2.9.1--py38h0020b31_1" macs2 $*
+}
+# And additional binds:
+export APPTAINER_BIND=$HOME/scratch/,$(realpath $HOME/scratch),/cvmfs/data.galaxyproject.org/
 
 ##################################
 ####### BEGINING OF SCRIPT #######
@@ -212,7 +275,9 @@ if [ ! -e ${sample}_mapped_sorted_cp_q30_noM.bam ]; then
 fi
 
 if [ ! -e ${sample}_mapped_sorted_cp_q30_noM_rmdup.bam ]; then
-  ${picardCommand} MarkDuplicates SORTING_COLLECTION_SIZE_RATIO=0.15 I=${sample}_mapped_sorted_cp_q30_noM.bam O=${sample}_mapped_sorted_cp_q30_noM_rmdup.bam M=${sample}_mapped_sorted_cp_q30_noM_rmdup.log REMOVE_DUPLICATES=true AS=true
+  # Add a readgroup
+  samtools addreplacerg -r "@RG\tID:ReadGroup1\tSM:${sample}" -o ${sample}_mapped_sorted_cp_q30_noM_with_RG.bam ${sample}_mapped_sorted_cp_q30_noM.bam
+  ${picardCommand} MarkDuplicates SORTING_COLLECTION_SIZE_RATIO=0.15 I=${sample}_mapped_sorted_cp_q30_noM_with_RG.bam O=${sample}_mapped_sorted_cp_q30_noM_rmdup.bam M=${sample}_mapped_sorted_cp_q30_noM_rmdup.log REMOVE_DUPLICATES=true AS=true
 fi
 
 ## To get tags for homer analysis
@@ -224,7 +289,8 @@ fi
 ## end
 
 # Get the bash script:
-wget "https://raw.githubusercontent.com/lldelisle/scriptsForAmandioEtAl2021/main/scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh" \
+mkdir -p $dirPathForScripts
+wget "https://github.com/lldelisle/myNGSanalysis/raw/refs/heads/main/hpc/helper_scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh" \
   -O ${dirPathForScripts}/fromMacs2BdgToSimplifiedBdgAndBw.sh -nc
 
 if [ ! -e ${sample}_macs_likeATAC.bedGraph.gz ]; then

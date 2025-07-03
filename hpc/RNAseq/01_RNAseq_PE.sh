@@ -9,9 +9,10 @@
 #SBATCH --time 12:00:00 # This depends on the size of the fastqs
 #SBATCH --array=2-19 # Put here the rows from the table that need to be processed in the table
 #SBATCH --job-name RNAseq # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /home/users/d/delislel/scratch/NET_project_RNAseq/ # This directory must exist, this is where will be the error and out files
+#SBATCH --chdir /home/users/d/delislel/scratch/whatever/RNAseq/ # This directory must exist, this is where will be the error and out files
 ## Specific to UNIGE:
 #SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --account herrerap
 
 # This script run cutadapt to remove adapters and bad quality bases
 # make alignment, counting and coverage with STAR ENCODE parameters
@@ -54,7 +55,7 @@ dirPathForFastq="${dirPathWithResults}/fastq/"
 # third column is same for R2
 # Alternatively second column can be SRA number but third column must be filled by anything for example also the SRA number
 # fourth column is the strandness of the library: forward or reverse or unstranded
-filePathForTable="/home/users/d/delislel/scripts/net_project/RNAseq/table.txt"
+filePathForTable="$HOME/scripts/whatever/RNAseq/table.txt"
 # filePathForGTF="${dirPathWithResults}/mergeOverlapGenesOfFilteredTranscriptsOfMus_musculus.GRCm39.104_ExonsOnly_UCSC.gtf"
 filePathForGTF="${dirPathWithResults}/gencode.v47.primary_assembly.annotation.gtf"
 dirPathForSTARIndex="/home/users/d/delislel/genomes/STARIndex_2.7.11a/${genome}/"
@@ -75,33 +76,70 @@ filePathForFasta="/home/users/d/delislel/genomes/fasta/${genome}.fa"
 ######
 
 # You can choose to use singularity, then you need to define each function:
+pathToImages=/cvmfs/singularity.galaxyproject.org/all/
+# Or use a personnal space
+# pathToImages=/home/users/d/delislel/scratch/images/
+
+# In order to run the download only once
+# This block is only executed for the first sample
+images_needed="cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 star:2.7.11b--h5ca1c30_5 cufflinks:2.2.1--py36_2 bedtools:2.31.1--hf5e1c6e_2 ucsc-bedgraphtobigwig:472--h9b8f530_1"
+if [ ${SLURM_ARRAY_TASK_ID} = ${SLURM_ARRAY_TASK_MIN} ]; then
+  for image in $images_needed; do
+    if [ ! -e "$pathToImages/$image" ]; then
+      wget -nc -O "$pathToImages/$image" "http://datacache.galaxyproject.org/singularity/all/$image"
+    fi
+  done
+else
+  echo "Waiting for the first sample to get all images."
+  i=0
+  while [[ "$i" -lt 20 ]]; do
+    sleep 1m
+    all_exists=1
+    for image in $images_needed; do
+      if [ ! -e "$pathToImages/$image" ]; then
+        all_exists=0
+      fi
+    done
+    if [ $all_exists = "1" ]; then
+      break
+    fi
+    ((i++))
+  done
+  if [ $all_exists = "0" ]; then
+    echo "After 20 minutes some images are not downloaded"
+    echo "Checkout what happened or download them before running"
+    exit 1
+  fi
+fi
+
 function cutadapt() {
-  singularity exec "/cvmfs/singularity.galaxyproject.org/all/cutadapt:5.0--py312h0fa9677_0" cutadapt $*
+  singularity exec "$pathToImages/cutadapt:5.0--py312h0fa9677_0" cutadapt $*
 }
 function samtools() {
-  singularity exec "/cvmfs/singularity.galaxyproject.org/all/samtools:1.9--h91753b0_8" samtools $*
+  singularity exec "$pathToImages/samtools:1.11--h6270b1f_0" samtools $*
 }
 function STAR() {
-  singularity exec "/cvmfs/singularity.galaxyproject.org/all/star:2.7.11b--h5ca1c30_4" STAR $*
+  singularity exec "$pathToImages/star:2.7.11b--h5ca1c30_5" STAR $*
 }
 function cufflinks() {
-  singularity exec "/cvmfs/singularity.galaxyproject.org/all/cufflinks:2.2.1--py36_2" cufflinks $*
+  singularity exec "$pathToImages/cufflinks:2.2.1--py36_2" cufflinks $*
 }
 # Cufflinks is used in another script:
 export -f cufflinks
 function bedtools() {
-  singularity exec "/cvmfs/singularity.galaxyproject.org/all/bedtools:2.31.1--hf5e1c6e_2" bedtools $*
+  singularity exec "$pathToImages/bedtools:2.31.1--hf5e1c6e_2" bedtools $*
 }
 # bedtools is used in another script:
 export -f bedtools
+export pathToImages=$pathToImages
 function bedGraphToBigWig() {
-  singularity exec "/cvmfs/singularity.galaxyproject.org/all/ucsc-bedgraphtobigwig:472--h9b8f530_1" bedGraphToBigWig $*
+  singularity exec "$pathToImages/ucsc-bedgraphtobigwig:472--h9b8f530_1" bedGraphToBigWig $*
 }
-# bedtools is used in another script:
+# bedGraphToBigWig is used in another script:
 export -f bedGraphToBigWig
 
 # And additional binds:
-export APPTAINER_BIND=$dirPathWithResults
+export APPTAINER_BIND=$HOME/scratch/,$(realpath $HOME/scratch),/cvmfs/data.galaxyproject.org/
 
 ##################################
 ####### BEGINING OF SCRIPT #######

@@ -7,11 +7,12 @@
 #SBATCH --mem 50G # The memory needed depends on the size of the genome
 #SBATCH --cpus-per-task 24 # This allows to speed the indexing
 #SBATCH --time 3:00:00 # This depends on the size of the fasta
-#SBATCH --array=1-2 # Put here the rows from the table that need to be processed in the table
+#SBATCH --array=2-2 # Put here the rows from the table that need to be processed in the table
 #SBATCH --job-name bowtie2_index # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/ # This directory must exists, this is where will be the error and out files
+#SBATCH --chdir /home/users/d/delislel/scratch/alphaTC1/ # This directory must exists, this is where will be the error and out files
 ## Specific to baobab:
-##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --account herrerap
 
 ##################################
 #### TO SET FOR EACH ANALYSIS ####
@@ -26,10 +27,10 @@ nbOfThreads=${SLURM_CPUS_PER_TASK}
 # All genomes are registered into a table where
 # first column is the genome name
 # second column is the absolute path for fasta
-filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/20220921_test_index/table_genomes.txt"
+filePathForTable="$HOME/scripts/alphatc1-clone-9/prepare/genomes_table.txt"
 
 # Substitute the name of your genome by __genome__
-basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/__genome__"
+basenamePathForB2Index="$PWD/genomes/bowtie2/__genome__"
 
 ### Specify the way to deal with dependencies:
 
@@ -48,7 +49,21 @@ basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/__genome__"
 
 # You can choose to use a conda environment to solve bowtie2 dependencies
 # Comment it if you will use module load
-condaEnvName=hic202209
+# condaEnvName=hic202209
+
+# You can choose to use singularity, then you need to define each function:
+# pathToImages=/cvmfs/singularity.galaxyproject.org/all/
+# I don't know why on bamboo on clusters it does not work...
+pathToImages=/home/users/d/delislel/scratch/images/
+if [ ! -e "$pathToImages/bowtie2:2.5.4--he96a11b_5" ]; then
+    wget -nc -O "$pathToImages/bowtie2:2.5.4--he96a11b_5" "http://datacache.galaxyproject.org/singularity/all/bowtie2:2.5.4--he96a11b_5"
+fi
+function bowtie2() {
+    singularity exec "$pathToImages/bowtie2:2.5.4--he96a11b_5" bowtie2 $*
+}
+function bowtie2-build() {
+    singularity exec "$pathToImages/bowtie2:2.5.4--he96a11b_5" bowtie2-build $*
+}
 
 ##################################
 ####### BEGINING OF SCRIPT #######
@@ -88,7 +103,11 @@ basenamePathForB2Index=${basenamePathForB2Index/__genome__/${genome}}
 if [ ! -e ${basenamePathForB2Index}.rev.2.bt2 ]; then
     mkdir -p $(dirname ${basenamePathForB2Index})
     bowtie2-build --thread ${nbOfThreads} ${filePathForFasta} ${basenamePathForB2Index}
-    ln -s ${filePathForFasta} ${basenamePathForB2Index}.fa
+    if [[ ${filePathForFasta} = *".gz" ]]; then
+        ln -s ${filePathForFasta} ${basenamePathForB2Index}.fa.gz
+    else
+        ln -s ${filePathForFasta} ${basenamePathForB2Index}.fa
+    fi
 else
     echo "bowtie2 index seems to already exists. If you want to regenerate it. Please remove it before running the job."
 fi
