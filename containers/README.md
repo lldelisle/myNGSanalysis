@@ -1,10 +1,10 @@
 # Containers
 <!-- TOC -->
 
-    - [Why?](#why)
-    - [What are containers?](#what-are-containers)
-    - [Important vocabulary](#important-vocabulary)
-    - [What means 'isolated' in 'isolated file system'?](#what-means-isolated-in-isolated-file-system)
+- [Why?](#why)
+- [What are containers?](#what-are-containers)
+- [Important vocabulary](#important-vocabulary)
+- [What means 'isolated' in 'isolated file system'?](#what-means-isolated-in-isolated-file-system)
 - [Application to RStudio server](#application-to-rstudio-server)
     - [R packages](#r-packages)
         - [Origin](#origin)
@@ -34,11 +34,11 @@
 
 <!-- /TOC -->
 
-### Why?
+## Why?
 
 The more I think about it the more I think this is the best way to do reproducible science and be able to have parallel projects without being stuck in an old version of a software. This is already used in galaxy (not on galaxy.epfl.ch because I had not enough time to set it up but it is on galaxyduboule at CDF) and I really think this should be used for RStudio server.
 
-### What are containers?
+## What are containers?
 
 I've been inspired by: [SIB course material](https://sib-swiss.github.io/containers-introduction-training/latest/) and [Carpentries course](https://carpentries-incubator.github.io/docker-introduction/).
 
@@ -49,7 +49,7 @@ Containers are:
   - containers share the kernel with the host OS
   - VMs bring the entire operating system
 
-### Important vocabulary
+## Important vocabulary
 
 ![Cookie containers](./containers-cookie-cutter.png)
 
@@ -61,7 +61,7 @@ Everyone can then download this image on its computer or on any server and then 
 
 You can personalize each cookie (remove one part with a knife, paste a bit of daw to make it larger) but then you loose the reproducibility so as much as possible it is better to modify the Dockerfile, regenerate an image and create a container from the new image. Also remember that the container has a short life usually hours so you may not want to spend time on customizing something that will last so shortly...
 
-### What means 'isolated' in 'isolated file system'?
+## What means 'isolated' in 'isolated file system'?
 
 By default there in no communication between what is on your computer and what is in your container.
 
