@@ -13,8 +13,8 @@ if (!($sif_version = Read-Host "Enter the version of verse_with_more_packages yo
 $project_name = Read-Host "Enter the name of your project (no space, leave empty if do not want to create a specific directory):"
 
 # Ask for the memory:
-$default = "30"
-if (!($mem = Read-Host "Enter the memory you need in GB [$default]:")) { $mem = $default }
+$default = "6"
+if (!($mem = Read-Host "Enter the memory you need in GB per CPU (max 7) [$default]:")) { $mem = $default }
 
 # Ask for the time:
 $default = "12:00:00"
@@ -67,8 +67,8 @@ while ($elapsed_time -lt $timeout) {
         Write-Host "Your username and passwords are"
         ssh ${username_on_scitas}@${name_host_machine} "cat rstudio-server.job.${jobid}.err | grep -B1 'password'"
 
-        Write-Host "Do not forget to open the tunnel in a separate powershell with the following command"
-        Write-Host "ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_scitas}@${name_host_machine}"
+        Write-Host "Do not forget to open the tunnel in a separate powershell with the following command but substitute 8787 by $my_local_port"
+        Write-Host "${tunnel_command}"
         return
     }
     Start-Sleep -Seconds 10
@@ -87,6 +87,6 @@ if ($elapsed_time -ge $timeout) {
     Write-Host "At http://localhost:${my_local_port}."
     Write-Host "To get the user and password (in theory you don't need it) you need to run"
     Write-Host "ssh ${username_on_scitas}@${name_host_machine} ""cat rstudio-server.job.${jobid}.err | grep -B1 password"""
-    Write-Host "Do not forget to open the tunnel in a separate powershell with the following command"
-    Write-Host "ssh -N -f -L ${my_local_port}:127.0.1.1:${PORT} ${username_on_scitas}@${name_host_machine}"
+    Write-Host "Do not forget to open the tunnel in a separate powershell with the following command but substitute 8787 by $my_local_port"
+    Write-Host "${tunnel_command}"
 }
