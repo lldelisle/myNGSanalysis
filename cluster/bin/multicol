@@ -12,7 +12,7 @@ width=`tput cols`
 
 # Execute the command
 eval "$*" > $tmpfile
-stdwidth=$(wc -L < $tmpfile)
+stdwidth=$(sed -r 's/\x1B\[([0-9]{1,3}(;[0-9]{1,3})*)?[mGK]//g' < $tmpfile | wc -L)
 stdheight=$(wc -l < $tmpfile)
 
 if (( $stdwidth > 0 )) && (( $stdheight > 0 ))
@@ -36,7 +36,9 @@ then
     do
       p=$(((c-1)*nl+l))
       line=$(sed -n "${p}p" $tmpfile)
-      printf "$fmt | " "${line}"
+      num_color_chars=$(echo $line | grep -Po '\x1B\[([0-9]{1,3}(;[0-9]{1,3})*)?[mGK]' | tr "\n" " " | wc -L)
+      colorfmt="%-"$((stdwidth + num_color_chars))"s"
+      printf "$colorfmt | " "${line}"
     done
     p=$(((nc-1)*nl+l))
     line=$(sed -n "${p}p" $tmpfile)
