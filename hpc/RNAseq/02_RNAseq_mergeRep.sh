@@ -132,11 +132,11 @@ if [ $noGlobal -eq 1 ]; then
         echo "Some combined strand coverage are missing will not compute combined strand coverage average."
     fi
 else
-    bigwigAverage --bigwigs $allBW --skipNAs --binSize $binsize -o ${sample}_Uniq_norm.bw
+    bigwigAverage --bigwigs $allBW --binSize $binsize -o ${sample}_Uniq_norm.bw
 fi
 if [ $doStrand = 1 ]; then
-    bigwigAverage --bigwigs $allBWfwd --skipNAs --binSize $binsize -o ${sample}_Uniq_fwd_norm.bw
-    bigwigAverage --bigwigs $allBWrev --skipNAs --binSize $binsize -o ${sample}_Uniq_rev_norm.bw
+    bigwigAverage --bigwigs $allBWfwd --binSize $binsize -o ${sample}_Uniq_fwd_norm.bw
+    bigwigAverage --bigwigs $allBWrev --binSize $binsize -o ${sample}_Uniq_rev_norm.bw
 else
     if [ -z "$allBWfwd" ]; then
         echo "No specific strand coverage"
