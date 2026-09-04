@@ -80,7 +80,7 @@ pathToImages=/cvmfs/singularity.galaxyproject.org/all/
 
 # In order to run the download only once
 # This block is only executed for the first sample
-images_needed="bowtie2:2.5.4--he96a11b_5 cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 bedtools:2.31.1--hf5e1c6e_2 ucsc-bedgraphtobigwig:472--h9b8f530_1 picard:3.3.0--hdfd78af_0 macs2:2.2.9.1--py38h0020b31_1"
+images_needed="bowtie2:2.5.4--he96a11b_5 cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 bedtools:2.31.1--hf5e1c6e_2 ucsc-bedgraphtobigwig:472--h9b8f530_1 picard:3.3.0--hdfd78af_0 macs2:2.2.9.1--py38h0020b31_1 sra-tools:3.2.1--h4304569_1"
 if [ ${SLURM_ARRAY_TASK_ID} = ${SLURM_ARRAY_TASK_MIN} ]; then
   for image in $images_needed; do
     if [ ! -e "$pathToImages/$image" ]; then
@@ -133,8 +133,11 @@ function picard() {
 function macs2() {
   singularity exec "$pathToImages/macs2:2.2.9.1--py38h0020b31_1" macs2 $*
 }
+function fasterq-dump() {
+  singularity exec "$pathToImages/sra-tools:3.2.1--h4304569_1" fasterq-dump $*
+}
 # And additional binds:
-export APPTAINER_BIND=$HOME/scratch/,$(realpath $HOME/scratch),/cvmfs/data.galaxyproject.org/
+export APPTAINER_BIND=$HOME/scratch/,/srv,/home/share,/home/shares,/cvmfs/data.galaxyproject.org/
 
 ##################################
 ####### BEGINING OF SCRIPT #######

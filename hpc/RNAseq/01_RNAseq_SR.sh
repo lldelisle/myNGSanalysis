@@ -81,7 +81,7 @@ pathToImages=/cvmfs/singularity.galaxyproject.org/all/
 
 # In order to run the download only once
 # This block is only executed for the first sample
-images_needed="cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 star:2.7.11b--h5ca1c30_5 cufflinks:2.2.1--py36_2 bedtools:2.31.1--hf5e1c6e_2 ucsc-bedgraphtobigwig:472--h9b8f530_1"
+images_needed="cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 star:2.7.11b--h5ca1c30_5 cufflinks:2.2.1--py36_2 bedtools:2.31.1--hf5e1c6e_2 ucsc-bedgraphtobigwig:472--h9b8f530_1 sra-tools:3.2.1--h4304569_1"
 if [ ${SLURM_ARRAY_TASK_ID} = ${SLURM_ARRAY_TASK_MIN} ]; then
   for image in $images_needed; do
     if [ ! -e "$pathToImages/$image" ]; then
@@ -136,9 +136,12 @@ function bedGraphToBigWig() {
 }
 # bedGraphToBigWig is used in another script:
 export -f bedGraphToBigWig
+function fasterq-dump() {
+  singularity exec "$pathToImages/sra-tools:3.2.1--h4304569_1" fasterq-dump $*
+}
 
 # And additional binds:
-export APPTAINER_BIND=$HOME/scratch/,$(realpath $HOME/scratch),/cvmfs/data.galaxyproject.org/
+export APPTAINER_BIND=$HOME/scratch/,/srv,/home/share,/home/shares,/cvmfs/data.galaxyproject.org/
 
 ##################################
 ####### BEGINING OF SCRIPT #######
