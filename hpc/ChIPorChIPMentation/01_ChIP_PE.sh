@@ -9,9 +9,10 @@
 #SBATCH --time 04:00:00 # This depends on the size of the fastqs
 #SBATCH --array=1-2 # Put here the rows from the table that need to be processed in the table
 #SBATCH --job-name ChIP_PE_test # Job name that appear in squeue as well as in output and error text files
-#SBATCH --chdir /scratch/ldelisle/ChIP/ # This directory must exist, this is where will be the error and out files
+#SBATCH --chdir /home/users/d/delislel/scratch/ChIP/ # This directory must exist, this is where will be the error and out files
 ## Specific to baobab:
-##SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --partition=shared-cpu # shared-cpu for CPU jobs that need to run up to 12h, public-cpu for CPU jobs that need to run between 12h and 4 days
+#SBATCH --account herrerap
 
 # This script remove adapters 
 # make alignment with Bowtie2
@@ -47,16 +48,16 @@ dirPathForFastq="${dirPathWithResults}/fastq/"
 # https://raw.githubusercontent.com/lldelisle/scriptsForAmandioEtAl2021/main/scripts/fromMacs2BdgToSimplifiedBdgAndBw.sh
 # If it does not exists
 # The python script will be put in dirPathForScripts
-dirPathForScripts="/home/ldelisle/scripts/Scitas_template_bashScript/"
+dirPathForScripts="$HOME/scripts/Scitas_template_bashScript/"
 # All samples are registered into a table where
 # first column is the sample name
 # second column is the path of the R1 fastq relatively to dirPathForFastq
 # third column is same for R2
 # Alternatively second column can be SRA number but third column must be filled by anything for example also the SRA number
-filePathForTable="/home/ldelisle/scripts/scitas_sbatchhistory/2022/TODO/table_ChIP_PE.txt"
+filePathForTable="$HOME/scripts/TODO/table_ChIP_PE.txt"
 
-basenamePathForB2Index="/home/ldelisle/genomes/bowtie2/${genome}"
-filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
+basenamePathForB2Index="/cvmfs/data.galaxyproject.org/byhand/${genome}/bowtie2_index/${genome}/${genome}"
+filePathForFasta="/cvmfs/data.galaxyproject.org/byhand/${genome}/sam_indexes/${genome}/${genome}.fa"
 
 ### Specify the way to deal with dependencies:
 
@@ -69,7 +70,67 @@ filePathForFasta="/home/ldelisle/genomes/fasta/${genome}.fa"
 # You can create it with: conda create -n chip202209 cutadapt samtools bowtie2 macs2 ucsc-bedgraphtobigwig
 # If you want to use sra you also need sra-tools>=2.11
 # Comment it if you will use module load
-condaEnvName=atac202209
+# condaEnvName=atac202209
+
+# You can choose to use singularity, then you need to define each function:
+pathToImages=/cvmfs/singularity.galaxyproject.org/all/
+
+# In order to run the download only once
+# This block is only executed for the first sample
+images_needed="bowtie2:2.5.4--he96a11b_5 cutadapt:5.0--py312h0fa9677_0 samtools:1.11--h6270b1f_0 ucsc-bedgraphtobigwig:472--h9b8f530_1 macs2:2.2.9.1--py38h0020b31_1 sra-tools:3.2.1--h4304569_1"
+if [ ${SLURM_ARRAY_TASK_ID} = ${SLURM_ARRAY_TASK_MIN} ]; then
+  for image in $images_needed; do
+    if [ ! -e "$pathToImages/$image" ]; then
+      wget -nc -O "$pathToImages/$image" "http://datacache.galaxyproject.org/singularity/all/$image"
+    fi
+  done
+else
+  echo "Waiting for the first sample to get all images."
+  i=0
+  while [[ "$i" -lt 20 ]]; do
+    sleep 1m
+    all_exists=1
+    for image in $images_needed; do
+      if [ ! -e "$pathToImages/$image" ]; then
+        all_exists=0
+      fi
+    done
+    if [ $all_exists = "1" ]; then
+      break
+    fi
+    ((i++))
+  done
+  if [ $all_exists = "0" ]; then
+    echo "After 20 minutes some images are not downloaded"
+    echo "Checkout what happened or download them before running"
+    exit 1
+  fi
+fi
+function bowtie2() {
+    singularity exec "$pathToImages/bowtie2:2.5.4--he96a11b_5" bowtie2 $*
+}
+function cutadapt() {
+  singularity exec "$pathToImages/cutadapt:5.0--py312h0fa9677_0" cutadapt $*
+}
+function samtools() {
+  singularity exec "$pathToImages/samtools:1.11--h6270b1f_0" samtools $*
+}
+function bedGraphToBigWig() {
+  singularity exec "$pathToImages/ucsc-bedgraphtobigwig:472--h9b8f530_1" bedGraphToBigWig $*
+}
+# bedGraphToBigWig is used in another script:
+export -f bedGraphToBigWig
+export pathToImages=$pathToImages
+function macs2() {
+  singularity exec "$pathToImages/macs2:2.2.9.1--py38h0020b31_1" macs2 $*
+}
+function fasterq-dump() {
+  singularity exec "$pathToImages/sra-tools:3.2.1--h4304569_1" fasterq-dump $*
+}
+# And additional binds:
+export APPTAINER_BIND=$HOME/scratch/,/srv,/home/share,/home/shares,/cvmfs/data.galaxyproject.org/
+
+
 ######
 
 
